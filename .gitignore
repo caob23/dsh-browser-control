@@ -1,4 +1,5 @@
-﻿node_modules/
+node_modules/
 lib/tsconfig.tsbuildinfo
 *.pem
 .DS_Store
+*.tmp

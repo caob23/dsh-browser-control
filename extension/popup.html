@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8" />
+	<style>
+		:root { color-scheme: light; }
+		* { box-sizing: border-box; }
+		body {
+			width: 300px;
+			margin: 0;
+			padding: 0;
+			font: 13px/1.5 system-ui, "Segoe UI", "Microsoft YaHei", sans-serif;
+			color: #1e293b;
+			background: linear-gradient(160deg, #eef2ff 0%, #f8fafc 55%);
+		}
+		.hero { padding: 20px 20px 14px; text-align: center; }
+		.brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
+		.logo {
+			width: 26px; height: 26px; border-radius: 8px;
+			background: linear-gradient(135deg, #4c6fff, #6d5bff);
+			color: #fff; font-weight: 700; font-size: 15px;
+			display: flex; align-items: center; justify-content: center;
+			box-shadow: 0 2px 6px rgba(76, 111, 255, .35);
+		}
+		.brand span.name { font-weight: 600; font-size: 14px; }
+		.brand span.ver { color: #94a3b8; font-size: 11px; }
+		.ring {
+			width: 64px; height: 64px; margin: 2px auto 10px; border-radius: 50%;
+			display: flex; align-items: center; justify-content: center;
+			background: #e2e8f0; transition: background .3s;
+		}
+		.ring.open { background: #fee2e2; }
+		.ring.on { background: #dcfce7; }
+		.ring.connecting { background: #fef3c7; }
+		.dot {
+			width: 18px; height: 18px; border-radius: 50%; background: #94a3b8;
+			transition: all .3s;
+		}
+		.ring.on .dot { background: #16a34a; box-shadow: 0 0 0 0 rgba(22, 163, 74, .45); animation: pulse 2s infinite; }
+		.ring.connecting .dot { background: #d97706; }
+		.ring.open .dot { background: #dc2626; }
+		@keyframes pulse {
+			0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, .40); }
+			70% { box-shadow: 0 0 0 12px rgba(22, 163, 74, 0); }
+			100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+		}
+		.state { font-size: 15px; font-weight: 600; }
+		.sub { font-size: 12px; color: #64748b; min-height: 16px; margin-top: 2px; }
+		.actions { display: flex; gap: 8px; padding: 4px 20px 12px; }
+		button.primary {
+			flex: 1; padding: 7px 0; border: none; border-radius: 9px;
+			background: linear-gradient(135deg, #4c6fff, #6d5bff);
+			color: #fff; font-size: 13px; cursor: pointer;
+			box-shadow: 0 2px 6px rgba(76, 111, 255, .3);
+		}
+		button.primary:hover { filter: brightness(1.06); }
+		button.ghost {
+			padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 9px;
+			background: #fff; color: #475569; font-size: 13px; cursor: pointer;
+		}
+		button.ghost:hover { background: #f1f5f9; }
+		.error {
+			display: none; margin: 0 20px 10px; padding: 8px 10px;
+			border-radius: 8px; background: #fef2f2; color: #b91c1c;
+			font-size: 11px; white-space: pre-wrap; word-break: break-all;
+		}
+		.error.show { display: block; }
+		.footer {
+			border-top: 1px solid #e2e8f0;
+			padding: 8px 20px 12px; background: rgba(255,255,255,.65);
+		}
+		.gear-row { display: flex; justify-content: space-between; align-items: center; }
+		.gear {
+			border: none; background: none; color: #94a3b8; font-size: 12px;
+			cursor: pointer; padding: 2px 4px; border-radius: 6px;
+		}
+		.gear:hover { color: #475569; background: #e2e8f0; }
+		.advanced { display: none; margin-top: 10px; }
+		.advanced.open { display: block; }
+		label { display: block; font-size: 11px; color: #64748b; margin-top: 8px; }
+		input[type="text"], input[type="password"] {
+			width: 100%; margin-top: 3px; padding: 6px 8px;
+			border: 1px solid #cbd5e1; border-radius: 7px;
+			font-size: 12px; color: #1e293b; background: #fff;
+		}
+		input:focus { outline: none; border-color: #4c6fff; }
+		.check { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12px; color: #475569; }
+		.check input { accent-color: #4c6fff; }
+		.save-btn {
+			margin-top: 12px; width: 100%; padding: 7px 0;
+			border: none; border-radius: 8px; background: #1e293b; color: #fff;
+			font-size: 12px; cursor: pointer;
+		}
+		.save-btn:hover { background: #334155; }
+	</style>
+</head>
+<body>
+	<div class="hero">
+		<div class="brand">
+			<div class="logo">D</div>
+			<span class="name">DSH 浏览器控制</span>
+			<span class="ver" id="ver"></span>
+		</div>
+		<div class="ring" id="ring"><div class="dot"></div></div>
+		<div class="state" id="state">正在检查…</div>
+		<div class="sub" id="hello"></div>
+	</div>
+
+	<div class="actions">
+		<button class="primary" id="reconnect">立即连接</button>
+		<button class="ghost" id="openStatus">状态页</button>
+	</div>
+
+	<div class="error" id="error"></div>
+
+	<div class="footer">
+		<div class="gear-row">
+			<span style="font-size:11px;color:#94a3b8">开关在 dsh 设置 → 插件 里</span>
+			<button class="gear" id="gear">高级 ▾</button>
+		</div>
+		<div class="advanced" id="advanced">
+			<label>桥接端口<input id="port" type="number" min="1024" max="65535" placeholder="9777" /></label>
+			<label>Token<input id="token" type="password" /></label>
+			<div class="check"><input id="auto" type="checkbox" /> 自动连接（随浏览器启动）</div>
+			<button class="save-btn" id="save">保存并重连</button>
+		</div>
+	</div>
+
+	<script src="popup.js"></script>
+</body>
+</html>

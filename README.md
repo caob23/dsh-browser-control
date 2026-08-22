@@ -36,11 +36,9 @@ Chrome 扩展（CDP 驱动）
 
 ## 安装 Chrome 扩展（30 秒）
 
-1. 下载 [`DSH-Browser-Control-1.0.0.zip`](../../releases/download/v1.0.0/DSH-Browser-Control-1.0.0.zip)
-2. 解压到固定文件夹（别删）
-3. Chrome 打开 `chrome://extensions` → 开启「开发者模式」
-4. 点「加载已解压的扩展程序」→ 选解压后的文件夹
-5. 工具栏出现鲸鱼图标 → 点击显示「已连接」= 成功
+下载 [`DSH-Browser-Control-1.0.0.crx`](../../releases/download/v1.0.0/DSH-Browser-Control-1.0.0.crx)，打开 `chrome://extensions` → 开启「开发者模式」→ 把 CRX 文件直接拖进去。
+
+> 也可以用 zip 方式：下载 `.zip` 解压后「加载已解压的扩展程序」。
 
 ## 安装 dsh 插件（1 分钟）
 

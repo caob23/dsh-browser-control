@@ -1,5 +1,5 @@
-# dsh-browser-bridge: mounts disabled by default.
-# Enable via Settings → Plugins → DSH Browser Control.
+﻿# dsh-browser-bridge: mounts disabled by default.
+# Enable via Settings -> Plugins -> DSH Browser Control.
 - insert:
     - id: browser-bridge
       name: '@deepseek-ai/dsh-browser-bridge'

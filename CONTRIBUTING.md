@@ -1,4 +1,4 @@
-# Contributing
+ï»¿# Contributing
 
 ## Development
 
@@ -10,5 +10,5 @@
 ## Extension Development
 
 1. Load extension/ as unpacked in chrome://extensions
-2. Enable the plugin in dsh Settings ¡ú Plugins
-3. Test commands via http://127.0.0.1:9777/api/command
+2. Enable the plugin in dsh Settings â†’ Plugins
+3. Test commands via http://127.0.0.1:9777/

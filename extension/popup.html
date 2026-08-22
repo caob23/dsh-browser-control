@@ -17,11 +17,10 @@
 		.brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px; }
 		.logo {
 			width: 26px; height: 26px; border-radius: 8px;
-			background: linear-gradient(135deg, #4c6fff, #6d5bff);
-			color: #fff; font-weight: 700; font-size: 15px;
+			overflow: hidden;
 			display: flex; align-items: center; justify-content: center;
-			box-shadow: 0 2px 6px rgba(76, 111, 255, .35);
 		}
+		.logo img { width: 26px; height: 26px; }
 		.brand span.name { font-weight: 600; font-size: 14px; }
 		.brand span.ver { color: #94a3b8; font-size: 11px; }
 		.ring {
@@ -97,7 +96,7 @@
 <body>
 	<div class="hero">
 		<div class="brand">
-			<div class="logo">D</div>
+			<div class="logo"><img src="icons/icon48.png" alt="DSH"></div>
 			<span class="name">DSH 浏览器控制</span>
 			<span class="ver" id="ver"></span>
 		</div>

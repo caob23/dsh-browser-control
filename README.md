@@ -57,7 +57,7 @@ Agent: 打开百度，搜索 DeepSeek Harness，提取第一条结果标题
 ### 💬 B 站发私信
 
 ```
-Agent: 去 B 站找用户 boKCHoYY白菜，发一条关于 ox 模型的介绍
+Agent: 去 B 站找用户「某位 UP 主」，发一条简短介绍
 
 → 打开 B 站用户搜索页
 → 在快照中定位用户主页链接

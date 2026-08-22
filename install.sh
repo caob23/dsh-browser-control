@@ -9,7 +9,7 @@ TARGET="$DSH_DIR/packages/web/browser-bridge"
 
 echo "Installing dsh-browser-bridge to $TARGET ..."
 mkdir -p "$TARGET"
-cp -r "$SCRIPT_DIR/plugin/"* "$TARGET/"
+cp -r "$SCRIPT_DIR/plugin/." "$TARGET/"
 echo ""
 echo "Done! Now configure dsh:"
 echo "  1. cordis.patch.yml — see dsh-config/README.md"

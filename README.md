@@ -1,1 +1,128 @@
-﻿<p align="center">  <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control"></p><h1 align="center">DSH Browser Control</h1><p align="center">  Chrome 娴忚鍣ㄦ墿灞?+ DeepSeek Harness 鎻掍欢<br>  璁?AI Agent 鍍忎汉涓€鏍锋搷鎺т綘鐨勭湡瀹炴祻瑙堝櫒</p><p align="center">  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="version">  <img src="https://img.shields.io/badge/license-MIT-green" alt="license">  <img src="https://img.shields.io/badge/Chrome-MV3-yellow" alt="chrome mv3">  <img src="https://img.shields.io/badge/DSH-Plugin-purple" alt="dsh plugin"></p>---## 杩欐槸浠€涔?涓€鍙ヨ瘽锛?*AI 鍙互鍍忎汉涓€鏍风敤浣犵殑娴忚鍣?*銆?涓嶆槸鏃犲ご娴忚鍣紝涓嶆槸 Puppeteer鈥斺€旀槸浣犵殑**鐪熷疄 Chrome**锛屽甫鐫€浣犵殑鐧诲綍鎬併€佷綘鐨?cookies銆佷綘鐨勬墍鏈変功绛俱€侫I 閫氳繃 Chrome DevTools Protocol 椹卞姩鏍囩椤碉紝浣犲彲浠ュ湪灞忓箷涓婄湅鍒版瘡涓€姝ユ搷浣溿€?```浣犲 AI 璇翠竴鍙ヨ瘽      鈫?Agent 璋冪敤 browser_* 宸ュ叿      鈫?DSH 鎻掍欢锛圵ebSocket 妗ワ級      鈫?Chrome 鎵╁睍锛圕DP 椹卞姩锛?      鈫?浣犵殑鐪熷疄娴忚鍣ㄦ墽琛屾搷浣?      鈫?缁撴灉杩斿洖缁?Agent```---## 瀹冭兘鍋氫粈涔?### 馃攳 鐧惧害鎼滅储 鈫?鎻愬彇缁撴灉```Agent: 鎵撳紑鐧惧害锛屾悳绱?DeepSeek Harness锛屾彁鍙栫涓€鏉＄粨鏋滄爣棰?鈫?瀵艰埅鍒?baidu.com鈫?瀹氫綅鎼滅储妗嗭紝杈撳叆鍏抽敭璇?鈫?鐐瑰嚮鎼滅储鈫?绛夊緟缁撴灉鍔犺浇鈫?鎻愬彇鍓?5 鏉＄粨鏋滄爣棰?```### 馃挰 B 绔欏彂绉佷俊```Agent: 鍘?B 绔欐壘鐢ㄦ埛銆屾煇浣?UP 涓汇€嶏紝鍙戜竴鏉＄畝鐭粙缁?鈫?鎵撳紑 B 绔欑敤鎴锋悳绱㈤〉鈫?鍦ㄥ揩鐓т腑瀹氫綅鐢ㄦ埛涓婚〉閾炬帴鈫?杩涘叆鐢ㄦ埛绌洪棿鈫?鐐瑰嚮銆屽彂娑堟伅銆嶁啋 鏂版爣绛鹃〉鎵撳紑绉佷俊绐楀彛鈫?鍦ㄥ瘜鏂囨湰缂栬緫鍣ㄤ腑杈撳叆娑堟伅鈫?鎸夊洖杞﹀彂閫?鈫?楠岃瘉娑堟伅姘旀场鍑虹幇 鉁?```### 馃幀 B 绔欐悳绱?鈫?缁熻瑙嗛鍗＄墖```Agent: 鎵撳紑 B 绔欙紝鎼滅储 CS2锛岀粺璁¤棰戝崱鐗囨暟閲?鈫?鎵撳紑 bilibili.com鈫?瀹氫綅椤堕儴鎼滅储妗?鈫?杈撳叆 CS2 骞舵悳绱?鈫?绛夊緟椤甸潰娓叉煋鈫?缁熻 .bili-video-card 鍏冪礌鏁伴噺鈫?鎴浘淇濆瓨鍒版闈?```### 馃攳 鐧惧害鎼滅储 鈫?鎻愬彇缁撴灉```鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹? Chrome 娴忚鍣?                                         鈹?鈹? 鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹? 鈹?鈹? 鈹? DSH Browser Control 鎵╁睍 (MV3)                  鈹? 鈹?鈹? 鈹?                                                  鈹? 鈹?鈹? 鈹? chrome.debugger (CDP)                            鈹? 鈹?鈹? 鈹?   鈹溾攢 Runtime.evaluate  鈫?鎵ц JS                 鈹? 鈹?鈹? 鈹?   鈹溾攢 Input.dispatch*   鈫?閿洏/榧犳爣浜嬩欢            鈹? 鈹?鈹? 鈹?   鈹溾攢 Page.capture*     鈫?鎴浘                     鈹? 鈹?鈹? 鈹?   鈹斺攢 DOM.getBoxModel  鈫?鍏冪礌瀹氫綅                  鈹? 鈹?鈹? 鈹?                                                  鈹? 鈹?鈹? 鈹? WebSocket 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈫?妗ユ帴鏈嶅姟    鈹? 鈹?鈹? 鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹? 鈹?鈹?                                                        鈹?鈹? 浣犵殑鐪熷疄鏍囩椤碉紙甯︾潃 cookies銆佺櫥褰曟€侊級                    鈹?鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?                        鈫?JSON over WebSocket鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?鈹? DeepSeek Harness                                       鈹?鈹? 鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹? 鈹?鈹? 鈹? @deepseek-ai/dsh-browser-bridge 鎻掍欢             鈹? 鈹?鈹? 鈹?                                                  鈹? 鈹?鈹? 鈹? 鈥?WebSocket 鏈嶅姟锛?27.0.0.1:9777锛?              鈹? 鈹?鈹? 鈹? 鈥?11 涓?browser_* 宸ュ叿娉ㄥ唽鍒?ctx.tools            鈹? 鈹?鈹? 鈹? 鈥?Settings 鍗＄墖锛氬紑鍏?/ 绔彛 / Token / 鎴浘鐩綍    鈹? 鈹?鈹? 鈹? 鈥?鎴浘钀界洏 + 涓存椂鏂囦欢娓呯悊                          鈹? 鈹?鈹? 鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹? 鈹?鈹?                                                        鈹?鈹? Agent 璋冪敤宸ュ叿 鈫?妗ヨ浆鍙戝懡浠?鈫?鎵╁睍鎵ц 鈫?缁撴灉杩斿洖        鈹?鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?```**鍏抽敭璁捐鍐崇瓥锛?*- 鎵╁睍**涓诲姩澶栬繛**妗ワ紙涓嶉渶瑕?native messaging host銆佷笉闇€瑕佹敞鍐岃〃锛?- 榛樿**鍏抽棴**鎸傝浇锛岀敤鎴峰湪璁剧疆椤垫墜鍔ㄥ紑鍚?- 鎸佷箙 debugger 闄勭潃鈥斺€旀帶鍒舵湡闂?Chrome 妯箙**濮嬬粓鏄剧ず**- 浠呯洃鍚?`127.0.0.1`锛宼oken 璁よ瘉---## 11 涓祻瑙堝櫒宸ュ叿| 宸ュ叿 | 鍔熻兘 | 绀轰緥 ||---|---|---|| `browser_navigate` | 瀵艰埅鍒?URL | 鎵撳紑 bilibili.com || `browser_read` | 璇诲彇椤甸潰鏂囨湰/HTML | 鎻愬彇鏂囩珷姝ｆ枃 || `browser_snapshot` | 蹇収 鈫?ref 浜や簰鏍?| 瀹氫綅鎸夐挳銆侀摼鎺ャ€佽緭鍏ユ || `browser_click` | 鐐瑰嚮鍏冪礌锛坆y ref / selector锛?| 鐐瑰嚮鎼滅储鎸夐挳 || `browser_type` | 濉叆鏂囨湰 | 鍦ㄦ悳绱㈡杈撳叆鍏抽敭璇?|| `browser_press` | 妯℃嫙閿洏鎸夐敭 | 鎸?Enter 鍙戦€?|| `browser_scroll` | 婊氬姩椤甸潰 | 缈婚〉娴忚 || `browser_tabs` | 鏍囩椤电鐞?| 鏂板缓 / 鍏抽棴 / 鍒囨崲鏍囩 || `browser_evaluate` | 鎵ц浠绘剰 JS | 鎻愬彇椤甸潰鏁版嵁 || `browser_screenshot` | 鎴浘锛堟敮鎸佸叏椤碉級 | 淇濆瓨椤甸潰蹇収 || `browser_cleanup` | 娓呯悊涓存椂鏂囦欢 | 鍒犻櫎鎴浘鍜岃剼鏈崏绋?|**snapshot + click/type 鐨勫伐浣滄祦锛?*1. `browser_snapshot` 杩斿洖椤甸潰鍙氦浜掑厓绱犲垪琛紝姣忎釜鍏冪礌甯?`ref` 缂栧彿锛堝 `e14`锛?2. `browser_click({ ref: "e14" })` 绮剧‘鐐瑰嚮璇ュ厓绱?3. `browser_type({ ref: "e14", value: "鎼滅储璇? })` 鍦ㄨ杈撳叆妗嗗～鍏ユ枃鏈?---## 瀹夎### Chrome 鎵╁睍1. 涓嬭浇 [`DSH-Browser-Control-0.2.0.zip`](../../releases/download/v0.2.0/DSH-Browser-Control-0.2.0.zip)2. 瑙ｅ帇鍒颁竴涓?*鍥哄畾鏂囦欢澶?*锛堜互鍚庡埆鍒狅級3. Chrome 鎵撳紑 `chrome://extensions` 鈫?寮€鍚彸涓婅 **寮€鍙戣€呮ā寮?*4. 鐐?**鍔犺浇宸茶В鍘嬬殑鎵╁睍绋嬪簭** 鈫?閫夋嫨瑙ｅ帇鍚庣殑鏂囦欢澶?5. 宸ュ叿鏍忓嚭鐜板浘鏍囷紝鐐瑰嚮寮圭獥鏄剧ず **宸茶繛鎺?* = 鎴愬姛### dsh 鎻掍欢```bash# 1. 鍏嬮殕浠撳簱git clone https://github.com/caob23/dsh-browser-control.git# 2. 澶嶅埗鎻掍欢鍒?dsh 浠撳簱cp -r dsh-browser-control/plugin/* \  /path/to/deepseek-harness/packages/web/browser-bridge/# 3. 鍙傜収鎺ュ叆璇存槑閰嶇疆 dshcat dsh-browser-control/dsh-config/README.md```鎺ュ叆姝ラ锛?- `cordis.patch.yml` 鍔犳彃浠舵寕杞借- `package.json` 鍔?workspace 渚濊禆- `tsconfig.host.json` 鍔犵被鍨嬪紩鐢?- 閲嶅惎 dsh 鈫?璁剧疆椤靛嚭鐜般€孌SH 娴忚鍣ㄦ帶鍒躲€嶅崱鐗?---## 浣跨敤1. **dsh 璁剧疆** 鈫?**鎻掍欢** 鈫?**DSH 娴忚鍣ㄦ帶鍒?* 鈫?**寮€鍚紑鍏?*2. **Chrome 鎵╁睍鑷姩杩炴帴**锛堢湅鍥炬爣鍙樼豢锛?3. **瀵硅瘽妗嗛噷璇翠竴鍙ヨ瘽**锛孉gent 鑷姩鎿嶆帶娴忚鍣?### 妫€鏌ヨ繛鎺ョ姸鎬?- 娴忚鍣ㄦ墦寮€ `http://127.0.0.1:9777/` 鈫?鏆楄壊鐘舵€佸崱鐗?- 寮圭獥鍥炬爣锛歚ON` = 宸茶繛鎺ワ紝`OFF` = 鏈繛鎺?### 閰嶇疆| 璁剧疆椤?| 榛樿鍊?| 璇存槑 ||---|---|---|| 绔彛 | `9777` | 妗ユ帴鐩戝惉绔彛 || Token | `dsh-local` | 鎵╁睍杩炴帴璁よ瘉 || 鑷姩杩炴帴 | 鉁?| 娴忚鍣ㄥ惎鍔ㄦ椂鑷姩杩炴ˉ || 鎴浘鐩綍 | `dsh-browser-shots/` | 鎴浘淇濆瓨浣嶇疆 |---## 娴嬭瘯楠岃瘉| 鍦烘櫙 | 缁撴灉 ||---|---|| 澶氭楠ゅ鑸?+ 缁撴灉鎻愬彇 | 鉁?|| B 绔欐悳绱㈢敤鎴?鈫?鍙戠淇★紙18 瀛楋級 | 鉁?|| 鐧惧害鎼滅储 鈫?鎻愬彇缁撴灉鏍囬 | 鉁?|| B 绔欐悳绱?鈫?缁熻瑙嗛鍗＄墖 + 鎴浘 | 鉁?|| 鍗曞厓娴嬭瘯 29/29 | 鉁?|| 绫诲瀷妫€鏌ワ紙host + client锛?| 鉁?|| 缁勫悎闂ㄧ 130 閰嶇疆鏂囦欢 | 鉁?|---## 鏂囦欢缁撴瀯```鈹溾攢鈹€ extension/              # Chrome 鎵╁睍鈹?  鈹溾攢鈹€ manifest.json       # MV3 娓呭崟鈹?  鈹溾攢鈹€ background.js       # Service Worker锛堟牳蹇冮€昏緫锛?鈹?  鈹溾攢鈹€ popup.html/js       # 寮圭獥 UI鈹?  鈹斺攢鈹€ icons/              # 鍥炬爣鈹?鈹溾攢鈹€ plugin/                 # dsh 鎻掍欢鈹?  鈹溾攢鈹€ src/鈹?  鈹?  鈹溾攢鈹€ index.ts        # 宸ュ叿娉ㄥ唽 + 鎻掍欢鍏ュ彛鈹?  鈹?  鈹溾攢鈹€ server.ts       # WebSocket 妗?+ HTTP API + 鐘舵€侀〉鈹?  鈹?  鈹溾攢鈹€ ws.ts           # RFC 6455 甯х紪瑙ｇ爜鈹?  鈹?  鈹斺攢鈹€ invariant.ts    # 杩愯鏃跺绾?鈹?  鈹溾攢鈹€ tests/              # 29 涓祴璇?鈹?  鈹溾攢鈹€ lib/                # 鏋勫缓浜х墿锛堝彲鐩存帴鐢級鈹?  鈹斺攢鈹€ package.json鈹?鈹溾攢鈹€ dsh-config/             # dsh 鎺ュ叆璇存槑鈹溾攢鈹€ DSH-Browser-Control-0.2.0.zip  # 鎵╁睍瀹夎鍖?鈹斺攢鈹€ signing-key.pem         # CRX 绛惧悕瀵嗛挜锛堝崌绾ф椂闇€瑕侊級```---## 鎶€鏈爤- **Chrome MV3** Service Worker锛堟棤鎸佷箙椤甸潰锛?- **Chrome DevTools Protocol**锛圧untime.evaluate / Input.dispatch* / Page.capture*锛?- **WebSocket**锛堟墿灞?鈫?妗ワ紝JSON 鏂囨湰甯э級- **Node.js HTTP**锛堢姸鎬侀〉 + 娓呯悊 API + 鍛戒护闈級- **RFC 6455** 甯х紪瑙ｇ爜锛堟湇鍔＄瀹炵幇锛?- **Cordis 鎻掍欢绯荤粺**锛圖eepSeek Harness 鐢熸€侊級- **TypeScript**锛坰trict 妯″紡锛屽畬鏁寸被鍨嬶級---## License[MIT](LICENSE)
+# DSH Browser Control
+
+<p align="center">
+  <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
+</p>
+
+Chrome 浏览器扩展 + DeepSeek Harness 插件，让 AI Agent 像人一样操控你的真实浏览器。
+
+## 这是什么
+
+不是无头浏览器，不是 Puppeteer——是你的**真实 Chrome**，带着你的登录态、你的 cookies。AI 通过 Chrome DevTools Protocol 驱动标签页，你可以在屏幕上看到每一步操作。
+
+```
+你对 AI 说一句话
+      ↓
+Agent 调用 browser_* 工具
+      ↓
+DSH 插件（WebSocket 桥）
+      ↓
+Chrome 扩展（CDP 驱动）
+      ↓
+你的真实浏览器执行操作
+      ↓
+结果返回给 Agent
+```
+
+## 安装 Chrome 扩展（30 秒）
+
+1. 下载 [`DSH-Browser-Control-1.0.0.zip`](../../releases/download/v1.0.0/DSH-Browser-Control-1.0.0.zip)
+2. 解压到固定文件夹（别删）
+3. Chrome 打开 `chrome://extensions` → 开启「开发者模式」
+4. 点「加载已解压的扩展程序」→ 选解压后的文件夹
+5. 工具栏出现鲸鱼图标 → 点击显示「已连接」= 成功
+
+## 安装 dsh 插件（1 分钟）
+
+### 方式 A：一键安装（推荐）
+
+```bash
+git clone https://github.com/caob23/dsh-browser-control.git
+cd dsh-browser-control
+./install.sh /你的路径/deepseek-harness
+```
+
+### 方式 B：手动安装
+
+下载 [`dsh-browser-bridge-plugin-v1.0.0.zip`](../../releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
+
+然后补充三处配置：
+
+1. `packages/bundle/base/package.json` 加一行依赖：
+
+    "@deepseek-ai/dsh-browser-bridge": "workspace:^"
+
+2. `cordis.patch.yml` 的 plugins 列表加：
+
+    - id: browser-bridge
+      name: '@deepseek-ai/dsh-browser-bridge'
+      config:
+        enabled: false
+
+3. `tsconfig.host.json` 的 references 加：
+
+    { "path": "./packages/web/browser-bridge" }
+
+重启 dsh → 设置页出现「DSH 浏览器控制」→ 开启即可。
+
+## 使用
+
+1. dsh 设置 → 插件 → DSH 浏览器控制 → 开启
+2. Chrome 扩展自动连接（端口 9777，Token: dsh-local）
+3. 对话说自然语言，Agent 自动操控浏览器
+
+访问 `http://127.0.0.1:9777/` 查看连接状态。
+
+## 工具清单
+
+| 工具 | 功能 |
+|---|---|
+| `browser_navigate` | 导航到 URL |
+| `browser_read` | 读取页面文本/HTML |
+| `browser_snapshot` | 页面快照 → ref 交互树 |
+| `browser_click` | 点击元素（by ref / selector） |
+| `browser_type` | 在输入框填入文本 |
+| `browser_press` | 模拟键盘按键 |
+| `browser_scroll` | 滚动页面 |
+| `browser_tabs` | 标签页管理（列表/新建/关闭/切换） |
+| `browser_evaluate` | 执行任意 JS |
+| `browser_screenshot` | 截取页面截图 |
+| `browser_cleanup` | 清理临时文件 |
+
+## 架构
+
+```
+Chrome 浏览器
+  └─ DSH Browser Control 扩展 (MV3)
+       └─ chrome.debugger (CDP)
+            └─ WebSocket ──────→ DSH 插件 (browser-bridge)
+                                      └─ browser_* 工具 → Agent
+```
+
+**关键设计：**
+- 扩展主动外连桥（不需要 native messaging host）
+- 默认关闭，设置页手动开启
+- 持久 debugger 附着——控制期间横幅始终显示
+- 仅监听 127.0.0.1，token 认证
+
+## 已验证
+
+| 场景 | 结果 |
+|---|---|
+| 百度搜索 → 提取结果标题 | ✅ |
+| B 站搜索用户 → 发私信 | ✅ |
+| B 站搜索 → 统计视频卡片 + 截图 | ✅ |
+| 单元测试 29/29 | ✅ |
+| 类型检查（host + client） | ✅ |
+
+## v1.0.0 更新
+
+- 🐳 新增鲸鱼 Logo（扩展 + 弹窗 + 状态页 SVG）
+- 📌 持久 debugger 附着（横幅始终显示）
+- 🔧 端口配置（简化自完整 URL）
+- 🖥️ 状态页 SVG logo + 暗色卡片样式
+- ✅ 29/29 测试通过
+
+## License
+
+[MIT](LICENSE)

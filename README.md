@@ -34,7 +34,7 @@ Chrome 扩展（CDP 驱动）
 结果返回给 Agent
 ```
 
-## 安装 Chrome 扩展（30 秒）
+## 安装 Chrome 扩展（10 秒）
 
 下载 [`DSH-Browser-Control-1.0.0.crx`](../../releases/download/v1.0.0/DSH-Browser-Control-1.0.0.crx)，打开 `chrome://extensions` → 开启「开发者模式」→ 把 CRX 文件直接拖进去。
 

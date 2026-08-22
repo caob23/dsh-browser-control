@@ -1,6 +1,18 @@
 # 接入 dsh 配置说明
 
-如果不用 `install.sh` 一键安装，需要手动改三个文件。
+## 一键安装
+
+```bash
+git clone https://github.com/caob23/dsh-browser-control.git
+cd dsh-browser-control
+./install.sh /你的路径/deepseek-harness
+```
+
+脚本会把 `plugin/` 复制到 `packages/web/browser-bridge/`，然后你还需要手动改三处配置。
+
+## 手动安装
+
+把 `plugin/` 目录复制到 `deepseek-harness/packages/web/browser-bridge/`，然后改三个文件：
 
 ## 1. cordis.patch.yml
 

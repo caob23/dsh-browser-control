@@ -4,6 +4,16 @@
   <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="version">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="license">
+  <img src="https://img.shields.io/badge/Chrome-MV3-yellow?style=flat-square" alt="chrome mv3">
+  <img src="https://img.shields.io/badge/DSH-Plugin-purple?style=flat-square" alt="dsh plugin">
+  <img src="https://img.shields.io/badge/CDP-powered-orange?style=flat-square" alt="cdp">
+  <img src="https://img.shields.io/badge/Tools-11_ browser_*-red?style=flat-square" alt="11 tools">
+  <img src="https://img.shields.io/badge/Tests-29%2F29-brightgreen?style=flat-square" alt="tests">
+</p>
+
 Chrome 浏览器扩展 + DeepSeek Harness 插件，让 AI Agent 像人一样操控你的真实浏览器。
 
 ## 这是什么

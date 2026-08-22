@@ -34,9 +34,17 @@ Chrome 扩展（CDP 驱动）
 结果返回给 Agent
 ```
 
+## 下载
+
+| 文件 | 说明 |
+|---|---|
+| [DSH-Browser-Control-1.0.0.crx](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/DSH-Browser-Control-1.0.0.crx) | Chrome 扩展，拖入即装 |
+| [DSH-Browser-Control-1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/DSH-Browser-Control-1.0.0.zip) | Chrome 扩展，解压后加载 |
+| [dsh-browser-bridge-plugin-v1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip) | dsh 插件 |
+
 ## 安装 Chrome 扩展（10 秒）
 
-下载 [`DSH-Browser-Control-1.0.0.crx`](../../releases/download/v1.0.0/DSH-Browser-Control-1.0.0.crx)，打开 `chrome://extensions` → 开启「开发者模式」→ 把 CRX 文件直接拖进去。
+下载 `.crx` 文件，打开 `chrome://extensions` → 开启「开发者模式」→ 把 CRX 文件直接拖进去。
 
 > 也可以用 zip 方式：下载 `.zip` 解压后「加载已解压的扩展程序」。
 

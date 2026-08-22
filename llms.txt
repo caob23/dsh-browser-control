@@ -1,0 +1,28 @@
+# DSH Browser Control
+
+Chrome 浏览器扩展 + DeepSeek Harness 插件，让 AI Agent 通过 CDP 驱动用户的真实浏览器。
+
+## 文件结构
+
+- `extension/` - Chrome MV3 扩展（background.js Service Worker + popup UI）
+- `plugin/` - DeepSeek Harness 插件（WebSocket 桥 + browser_* 工具）
+- `install.sh` - 一键安装脚本
+- `cordis.patch.yml` - 插件挂载配置
+- `dsh-config/` - dsh 接入说明
+
+## 技术栈
+
+- Chrome DevTools Protocol（CDP）via chrome.debugger API
+- WebSocket（扩展 → 桥，JSON 文本帧）
+- Node.js HTTP（状态页 + 命令面 + 清理 API）
+- RFC 6455 帧编解码
+- TypeScript（strict 模式）
+- Cordis 插件系统（DeepSeek Harness 生态）
+
+## 关键文件
+
+- `plugin/src/index.ts` - 11 个 browser_* 工具注册
+- `plugin/src/server.ts` - WebSocket 服务 + HTTP 面 + 状态页
+- `plugin/src/ws.ts` - RFC 6455 帧编解码
+- `extension/background.js` - CDP 命令分发 + 持久 debugger 附着
+- `extension/popup.js` - 弹窗状态 UI

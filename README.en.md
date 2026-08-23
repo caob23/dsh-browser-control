@@ -1,11 +1,11 @@
-# DSH Browser Control
+﻿# DSH Browser Control
 
 <p align="center">
   <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
 </p>
 
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
+  <a href="README.md">绠€浣撲腑鏂?/a> 路 <a href="README.en.md">English</a>
 </p>
 
 <p align="center">
@@ -21,36 +21,31 @@
 A Chrome extension + DeepSeek Harness plugin that lets AI agents drive your real browser like a human.
 
 <p align="center">
-  <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
+  <img src="assets/banner.png" width="480" alt="DSH Browser Control 鈥?a whale searching Google with a mouse">
 </p>
 
 ## What is this
 
-Not a headless browser, not Puppeteer — your **real Chrome**, with your logins and cookies. The AI drives tabs through the Chrome DevTools Protocol while you watch every step on screen.
+Not a headless browser, not Puppeteer 鈥?your **real Chrome**, with your logins and cookies. The AI drives tabs through the Chrome DevTools Protocol while you watch every step on screen.
 
 ```
 You say one sentence to the AI
-      ↓
-Agent calls browser_* tools
-      ↓
-DSH plugin (WebSocket bridge)
-      ↓
-Chrome extension (CDP)
-      ↓
-Your real browser performs the action
-      ↓
-Result returns to the Agent
+      鈫?Agent calls browser_* tools
+      鈫?DSH plugin (WebSocket bridge)
+      鈫?Chrome extension (CDP)
+      鈫?Your real browser performs the action
+      鈫?Result returns to the Agent
 ```
 
 ## How it differs from MCP browser solutions
 
-Browsers via MCP (Playwright MCP, Puppeteer MCP, browser-use…) share one trait: they launch a **fresh browser instance they downloaded themselves**. This project takes the other road:
+Browsers via MCP (Playwright MCP, Puppeteer MCP, browser-use鈥? share one trait: they launch a **fresh browser instance they downloaded themselves**. This project takes the other road:
 
 | | This project | Playwright / Puppeteer MCP |
 |---|---|---|
 | Browser | The real Chrome you are using | Separate auto-downloaded instance |
-| Logins / Cookies | ✅ Fully inherited, no re-login | ❌ Fresh profile every time |
-| CAPTCHAs / QR login | Rarely hit — your sessions stay logged in | Frequently stuck at login walls |
+| Logins / Cookies | 鉁?Fully inherited, no re-login | 鉂?Fresh profile every time |
+| CAPTCHAs / QR login | Rarely hit 鈥?your sessions stay logged in | Frequently stuck at login walls |
 | Visibility | Live on your screen, grab the mouse anytime | Headless or separate window |
 | Environment deps | No Node / npx / Python needed | Needs npx or uvx runtime |
 | Setup | Load extension + settings toggle | Edit MCP client JSON config |
@@ -63,12 +58,12 @@ In one line: **for "use MY browser" tasks (logged-in Bilibili, Zhihu, admin pane
 
 | File | Purpose |
 |---|---|
-| [DSH-Browser-Control-1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/DSH-Browser-Control-1.0.0.zip) | Chrome extension (unzip and load) |
-| [dsh-browser-bridge-plugin-v1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip) | dsh plugin |
+| [DSH-Browser-Control-1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/DSH-Browser-Control-1.0.1.zip) | Chrome extension (unzip and load) |
+| [dsh-browser-bridge-plugin-v1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip) | dsh plugin |
 
 ## Install the Chrome extension (30 seconds)
 
-Download the zip → unzip to a fixed folder (don't delete it) → open `chrome://extensions` → enable Developer mode → click "Load unpacked" → pick the unzipped folder.
+Download the zip 鈫?unzip to a fixed folder (don't delete it) 鈫?open `chrome://extensions` 鈫?enable Developer mode 鈫?click "Load unpacked" 鈫?pick the unzipped folder.
 
 Whale icon in the toolbar = success. Requires Chrome 116+.
 
@@ -82,11 +77,11 @@ cd dsh-browser-control
 ./install.sh /path/to/deepseek-harness
 ```
 
-The script only copies plugin files into place — **you still need the three manual config edits** (same as Option B, step 2), then restart dsh.
+The script only copies plugin files into place 鈥?**you still need the three manual config edits** (same as Option B, step 2), then restart dsh.
 
 ### Option B: manual install
 
-Download [`dsh-browser-bridge-plugin-v1.0.0.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip) and unzip into `deepseek-harness/packages/web/browser-bridge/`.
+Download [`dsh-browser-bridge-plugin-v1.0.1.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip) and unzip into `deepseek-harness/packages/web/browser-bridge/`.
 
 Then add three pieces of config:
 
@@ -111,11 +106,11 @@ Then add three pieces of config:
 { "path": "./packages/web/browser-bridge" }
 ```
 
-Restart dsh → the "DSH Browser Control" card appears in Settings → enable it. Details in [dsh-config/README.md](dsh-config/README.md).
+Restart dsh 鈫?the "DSH Browser Control" card appears in Settings 鈫?enable it. Details in [dsh-config/README.md](dsh-config/README.md).
 
 ## Usage
 
-1. dsh Settings → Plugins → DSH Browser Control → enable
+1. dsh Settings 鈫?Plugins 鈫?DSH Browser Control 鈫?enable
 2. The extension connects automatically (port 9777, default token dsh-local)
 3. Talk in natural language; the agent drives the browser
 
@@ -127,7 +122,7 @@ Visit `http://127.0.0.1:9777/` for connection status.
 |---|---|
 | `browser_navigate` | Navigate to a URL |
 | `browser_read` | Read page text/HTML |
-| `browser_snapshot` | Page snapshot → ref interaction tree |
+| `browser_snapshot` | Page snapshot 鈫?ref interaction tree |
 | `browser_click` | Click an element (by ref / selector) |
 | `browser_type` | Type into inputs |
 | `browser_press` | Send keyboard keys |
@@ -141,27 +136,27 @@ Visit `http://127.0.0.1:9777/` for connection status.
 
 ```
 Chrome browser
-  └─ DSH Browser Control extension (MV3)
-       └─ chrome.debugger (CDP)
-            └─ WebSocket ──────→ DSH plugin (browser-bridge)
-                                      └─ browser_* tools → Agent
+  鈹斺攢 DSH Browser Control extension (MV3)
+       鈹斺攢 chrome.debugger (CDP)
+            鈹斺攢 WebSocket 鈹€鈹€鈹€鈹€鈹€鈹€鈫?DSH plugin (browser-bridge)
+                                      鈹斺攢 browser_* tools 鈫?Agent
 ```
 
 **Key design:**
 - Extension dials out to the bridge (no native messaging host)
 - Off by default; enabled manually from Settings
-- Persistent debugger attachment — banner stays visible during control
+- Persistent debugger attachment 鈥?banner stays visible during control
 - Listens on 127.0.0.1 only, token-authenticated
 
 ## Verified
 
 | Scenario | Result |
 |---|---|
-| Baidu search → extract result titles | ✅ |
-| Bilibili user search → send DM | ✅ |
-| Bilibili search → count video cards + screenshot | ✅ |
-| Unit tests 29/29 | ✅ |
-| Type checks (host + client) | ✅ |
+| Baidu search 鈫?extract result titles | 鉁?|
+| Bilibili user search 鈫?send DM | 鉁?|
+| Bilibili search 鈫?count video cards + screenshot | 鉁?|
+| Unit tests 29/29 | 鉁?|
+| Type checks (host + client) | 鉁?|
 
 ## Changelog
 

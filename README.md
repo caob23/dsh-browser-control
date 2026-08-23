@@ -1,11 +1,11 @@
-# DSH Browser Control
+﻿# DSH Browser Control
 
 <p align="center">
   <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
 </p>
 
 <p align="center">
-  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
+  <a href="README.md">绠€浣撲腑鏂?/a> 路 <a href="README.en.md">English</a>
 </p>
 
 <p align="center">
@@ -18,85 +18,66 @@
   <img src="https://img.shields.io/badge/tests-29%2F29-brightgreen?style=flat-square" alt="tests">
 </p>
 
-Chrome 浏览器扩展 + DeepSeek Harness 插件，让 AI Agent 像人一样操控你的真实浏览器。
-
+Chrome 娴忚鍣ㄦ墿灞?+ DeepSeek Harness 鎻掍欢锛岃 AI Agent 鍍忎汉涓€鏍锋搷鎺т綘鐨勭湡瀹炴祻瑙堝櫒銆?
 <p align="center">
-  <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
+  <img src="assets/banner.png" width="480" alt="DSH Browser Control 鈥?a whale searching Google with a mouse">
 </p>
 
-## 这是什么
-
-不是无头浏览器，不是 Puppeteer——是你的**真实 Chrome**，带着你的登录态、你的 cookies。AI 通过 Chrome DevTools Protocol 驱动标签页，你可以在屏幕上看到每一步操作。
-
+## 杩欐槸浠€涔?
+涓嶆槸鏃犲ご娴忚鍣紝涓嶆槸 Puppeteer鈥斺€旀槸浣犵殑**鐪熷疄 Chrome**锛屽甫鐫€浣犵殑鐧诲綍鎬併€佷綘鐨?cookies銆侫I 閫氳繃 Chrome DevTools Protocol 椹卞姩鏍囩椤碉紝浣犲彲浠ュ湪灞忓箷涓婄湅鍒版瘡涓€姝ユ搷浣溿€?
 ```
-你对 AI 说一句话
-      ↓
-Agent 调用 browser_* 工具
-      ↓
-DSH 插件（WebSocket 桥）
-      ↓
-Chrome 扩展（CDP 驱动）
-      ↓
-你的真实浏览器执行操作
-      ↓
-结果返回给 Agent
+浣犲 AI 璇翠竴鍙ヨ瘽
+      鈫?Agent 璋冪敤 browser_* 宸ュ叿
+      鈫?DSH 鎻掍欢锛圵ebSocket 妗ワ級
+      鈫?Chrome 鎵╁睍锛圕DP 椹卞姩锛?      鈫?浣犵殑鐪熷疄娴忚鍣ㄦ墽琛屾搷浣?      鈫?缁撴灉杩斿洖缁?Agent
 ```
 
-## 和 MCP 浏览器方案的区别
+## 鍜?MCP 娴忚鍣ㄦ柟妗堢殑鍖哄埆
 
-市面上已经有 Playwright MCP、Puppeteer MCP、browser-use 等，它们的共同点：启动一个**自己下载的全新浏览器实例**。本项目走的是另一条路：
-
-| | 本项目 | Playwright / Puppeteer MCP |
+甯傞潰涓婂凡缁忔湁 Playwright MCP銆丳uppeteer MCP銆乥rowser-use 绛夛紝瀹冧滑鐨勫叡鍚岀偣锛氬惎鍔ㄤ竴涓?*鑷繁涓嬭浇鐨勫叏鏂版祻瑙堝櫒瀹炰緥**銆傛湰椤圭洰璧扮殑鏄彟涓€鏉¤矾锛?
+| | 鏈」鐩?| Playwright / Puppeteer MCP |
 |---|---|---|
-| 浏览器 | 你正在用的真实 Chrome | 自动下载的独立实例 |
-| 登录态 / Cookies | ✅ 全部继承，无需重新登录 | ❌ 每次全新 profile |
-| 过验证码 / 扫码登录 | 你的会话已经登录，基本不遇到 | 经常卡在登录墙 |
-| 可见性 | 屏幕上实时可见，随时鼠标接管 | 无头运行或独立窗口 |
-| 环境依赖 | 无需 Node / npx / Python | 需要 npx 或 uvx 运行时 |
-| 接入方式 | 加载扩展 + 设置页开关 | 编辑 MCP 客户端 JSON 配置 |
-| 磁盘占用 | 复用现有 Chrome，零新增 | 额外下载数百 MB 浏览器 |
-| 集成深度 | dsh 原生插件（设置卡片 / 状态页 / 清理按钮） | 通用 MCP server |
+| 娴忚鍣?| 浣犳鍦ㄧ敤鐨勭湡瀹?Chrome | 鑷姩涓嬭浇鐨勭嫭绔嬪疄渚?|
+| 鐧诲綍鎬?/ Cookies | 鉁?鍏ㄩ儴缁ф壙锛屾棤闇€閲嶆柊鐧诲綍 | 鉂?姣忔鍏ㄦ柊 profile |
+| 杩囬獙璇佺爜 / 鎵爜鐧诲綍 | 浣犵殑浼氳瘽宸茬粡鐧诲綍锛屽熀鏈笉閬囧埌 | 缁忓父鍗″湪鐧诲綍澧?|
+| 鍙鎬?| 灞忓箷涓婂疄鏃跺彲瑙侊紝闅忔椂榧犳爣鎺ョ | 鏃犲ご杩愯鎴栫嫭绔嬬獥鍙?|
+| 鐜渚濊禆 | 鏃犻渶 Node / npx / Python | 闇€瑕?npx 鎴?uvx 杩愯鏃?|
+| 鎺ュ叆鏂瑰紡 | 鍔犺浇鎵╁睍 + 璁剧疆椤靛紑鍏?| 缂栬緫 MCP 瀹㈡埛绔?JSON 閰嶇疆 |
+| 纾佺洏鍗犵敤 | 澶嶇敤鐜版湁 Chrome锛岄浂鏂板 | 棰濆涓嬭浇鏁扮櫨 MB 娴忚鍣?|
+| 闆嗘垚娣卞害 | dsh 鍘熺敓鎻掍欢锛堣缃崱鐗?/ 鐘舵€侀〉 / 娓呯悊鎸夐挳锛?| 閫氱敤 MCP server |
 
-一句话：**要 AI 用"你自己的"浏览器干活（已登录的 B 站、知乎、淘宝后台），用本项目；要做跨浏览器、跨应用的通用自动化测试，用 MCP。**
+涓€鍙ヨ瘽锛?*瑕?AI 鐢?浣犺嚜宸辩殑"娴忚鍣ㄥ共娲伙紙宸茬櫥褰曠殑 B 绔欍€佺煡涔庛€佹窐瀹濆悗鍙帮級锛岀敤鏈」鐩紱瑕佸仛璺ㄦ祻瑙堝櫒銆佽法搴旂敤鐨勯€氱敤鑷姩鍖栨祴璇曪紝鐢?MCP銆?*
 
-## 下载
+## 涓嬭浇
 
-| 文件 | 说明 |
+| 鏂囦欢 | 璇存槑 |
 |---|---|
-| [DSH-Browser-Control-1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/DSH-Browser-Control-1.0.0.zip) | Chrome 扩展（解压后加载） |
-| [dsh-browser-bridge-plugin-v1.0.0.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip) | dsh 插件 |
+| [DSH-Browser-Control-1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/DSH-Browser-Control-1.0.1.zip) | Chrome 鎵╁睍锛堣В鍘嬪悗鍔犺浇锛?|
+| [dsh-browser-bridge-plugin-v1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip) | dsh 鎻掍欢 |
 
-## 安装 Chrome 扩展（30 秒）
+## 瀹夎 Chrome 鎵╁睍锛?0 绉掞級
 
-下载 zip → 解压到固定文件夹（别删）→ Chrome 打开 `chrome://extensions` → 开启「开发者模式」→ 点「加载已解压的扩展程序」→ 选解压后的文件夹。
-
-工具栏出现鲸鱼图标 = 成功。需要 Chrome 116+。
-
-## 安装 dsh 插件（1 分钟）
-
-### 方式 A：一键安装（推荐）
-
+涓嬭浇 zip 鈫?瑙ｅ帇鍒板浐瀹氭枃浠跺す锛堝埆鍒狅級鈫?Chrome 鎵撳紑 `chrome://extensions` 鈫?寮€鍚€屽紑鍙戣€呮ā寮忋€嶁啋 鐐广€屽姞杞藉凡瑙ｅ帇鐨勬墿灞曠▼搴忋€嶁啋 閫夎В鍘嬪悗鐨勬枃浠跺す銆?
+宸ュ叿鏍忓嚭鐜伴哺楸煎浘鏍?= 鎴愬姛銆傞渶瑕?Chrome 116+銆?
+## 瀹夎 dsh 鎻掍欢锛? 鍒嗛挓锛?
+### 鏂瑰紡 A锛氫竴閿畨瑁咃紙鎺ㄨ崘锛?
 ```bash
 git clone https://github.com/caob23/dsh-browser-control.git
 cd dsh-browser-control
-./install.sh /你的路径/deepseek-harness
+./install.sh /浣犵殑璺緞/deepseek-harness
 ```
 
-脚本只负责把插件文件复制到位，**完成后仍需手动改三处配置**（同方式 B 的第 2 步），改完重启 dsh 才会生效。
-
-### 方式 B：手动安装
-
-下载 [`dsh-browser-bridge-plugin-v1.0.0.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
-
-然后补充三处配置：
-
-1. `packages/bundle/base/package.json` 的 dependencies 加：
+鑴氭湰鍙礋璐ｆ妸鎻掍欢鏂囦欢澶嶅埗鍒颁綅锛?*瀹屾垚鍚庝粛闇€鎵嬪姩鏀逛笁澶勯厤缃?*锛堝悓鏂瑰紡 B 鐨勭 2 姝ワ級锛屾敼瀹岄噸鍚?dsh 鎵嶄細鐢熸晥銆?
+### 鏂瑰紡 B锛氭墜鍔ㄥ畨瑁?
+涓嬭浇 [`dsh-browser-bridge-plugin-v1.0.1.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip)锛岃В鍘嬪埌 deepseek-harness 鐨?`packages/web/browser-bridge/`銆?
+鐒跺悗琛ュ厖涓夊閰嶇疆锛?
+1. `packages/bundle/base/package.json` 鐨?dependencies 鍔狅細
 
 ```json
 "@deepseek-ai/dsh-browser-bridge": "workspace:^"
 ```
 
-2. `cordis.patch.yml` 的 plugins 列表加：
+2. `cordis.patch.yml` 鐨?plugins 鍒楄〃鍔狅細
 
 ```yaml
 - id: browser-bridge
@@ -105,68 +86,57 @@ cd dsh-browser-control
     enabled: false
 ```
 
-3. `tsconfig.host.json` 的 references 加：
+3. `tsconfig.host.json` 鐨?references 鍔狅細
 
 ```json
 { "path": "./packages/web/browser-bridge" }
 ```
 
-重启 dsh → 设置页出现「DSH 浏览器控制」→ 开启即可。详细说明见 [dsh-config/README.md](dsh-config/README.md)。
+閲嶅惎 dsh 鈫?璁剧疆椤靛嚭鐜般€孌SH 娴忚鍣ㄦ帶鍒躲€嶁啋 寮€鍚嵆鍙€傝缁嗚鏄庤 [dsh-config/README.md](dsh-config/README.md)銆?
+## 浣跨敤
 
-## 使用
+1. dsh 璁剧疆 鈫?鎻掍欢 鈫?DSH 娴忚鍣ㄦ帶鍒?鈫?寮€鍚?2. Chrome 鎵╁睍鑷姩杩炴帴锛堢鍙?9777锛孴oken 榛樿 dsh-local锛?3. 瀵硅瘽璇磋嚜鐒惰瑷€锛孉gent 鑷姩鎿嶆帶娴忚鍣?
+璁块棶 `http://127.0.0.1:9777/` 鏌ョ湅杩炴帴鐘舵€併€?
+## 宸ュ叿娓呭崟
 
-1. dsh 设置 → 插件 → DSH 浏览器控制 → 开启
-2. Chrome 扩展自动连接（端口 9777，Token 默认 dsh-local）
-3. 对话说自然语言，Agent 自动操控浏览器
-
-访问 `http://127.0.0.1:9777/` 查看连接状态。
-
-## 工具清单
-
-| 工具 | 功能 |
+| 宸ュ叿 | 鍔熻兘 |
 |---|---|
-| `browser_navigate` | 导航到 URL |
-| `browser_read` | 读取页面文本/HTML |
-| `browser_snapshot` | 页面快照 → ref 交互树 |
-| `browser_click` | 点击元素（by ref / selector） |
-| `browser_type` | 在输入框填入文本 |
-| `browser_press` | 模拟键盘按键 |
-| `browser_scroll` | 滚动页面 |
-| `browser_tabs` | 标签页管理（列表/新建/关闭/切换） |
-| `browser_evaluate` | 执行任意 JS |
-| `browser_screenshot` | 截取页面截图 |
-| `browser_cleanup` | 清理临时文件 |
+| `browser_navigate` | 瀵艰埅鍒?URL |
+| `browser_read` | 璇诲彇椤甸潰鏂囨湰/HTML |
+| `browser_snapshot` | 椤甸潰蹇収 鈫?ref 浜や簰鏍?|
+| `browser_click` | 鐐瑰嚮鍏冪礌锛坆y ref / selector锛?|
+| `browser_type` | 鍦ㄨ緭鍏ユ濉叆鏂囨湰 |
+| `browser_press` | 妯℃嫙閿洏鎸夐敭 |
+| `browser_scroll` | 婊氬姩椤甸潰 |
+| `browser_tabs` | 鏍囩椤电鐞嗭紙鍒楄〃/鏂板缓/鍏抽棴/鍒囨崲锛?|
+| `browser_evaluate` | 鎵ц浠绘剰 JS |
+| `browser_screenshot` | 鎴彇椤甸潰鎴浘 |
+| `browser_cleanup` | 娓呯悊涓存椂鏂囦欢 |
 
-## 架构
+## 鏋舵瀯
 
 ```
-Chrome 浏览器
-  └─ DSH Browser Control 扩展 (MV3)
-       └─ chrome.debugger (CDP)
-            └─ WebSocket ──────→ DSH 插件 (browser-bridge)
-                                      └─ browser_* 工具 → Agent
+Chrome 娴忚鍣?  鈹斺攢 DSH Browser Control 鎵╁睍 (MV3)
+       鈹斺攢 chrome.debugger (CDP)
+            鈹斺攢 WebSocket 鈹€鈹€鈹€鈹€鈹€鈹€鈫?DSH 鎻掍欢 (browser-bridge)
+                                      鈹斺攢 browser_* 宸ュ叿 鈫?Agent
 ```
 
-**关键设计：**
-- 扩展主动外连桥（不需要 native messaging host）
-- 默认关闭，设置页手动开启
-- 持久 debugger 附着——控制期间横幅始终显示
-- 仅监听 127.0.0.1，token 认证
+**鍏抽敭璁捐锛?*
+- 鎵╁睍涓诲姩澶栬繛妗ワ紙涓嶉渶瑕?native messaging host锛?- 榛樿鍏抽棴锛岃缃〉鎵嬪姩寮€鍚?- 鎸佷箙 debugger 闄勭潃鈥斺€旀帶鍒舵湡闂存í骞呭缁堟樉绀?- 浠呯洃鍚?127.0.0.1锛宼oken 璁よ瘉
 
-## 已验证
-
-| 场景 | 结果 |
+## 宸查獙璇?
+| 鍦烘櫙 | 缁撴灉 |
 |---|---|
-| 百度搜索 → 提取结果标题 | ✅ |
-| B 站搜索用户 → 发私信 | ✅ |
-| B 站搜索 → 统计视频卡片 + 截图 | ✅ |
-| 单元测试 29/29 | ✅ |
-| 类型检查（host + client） | ✅ |
+| 鐧惧害鎼滅储 鈫?鎻愬彇缁撴灉鏍囬 | 鉁?|
+| B 绔欐悳绱㈢敤鎴?鈫?鍙戠淇?| 鉁?|
+| B 绔欐悳绱?鈫?缁熻瑙嗛鍗＄墖 + 鎴浘 | 鉁?|
+| 鍗曞厓娴嬭瘯 29/29 | 鉁?|
+| 绫诲瀷妫€鏌ワ紙host + client锛?| 鉁?|
 
-## 更新日志
+## 鏇存柊鏃ュ織
 
-见 [CHANGELOG.md](CHANGELOG.md)。
-
+瑙?[CHANGELOG.md](CHANGELOG.md)銆?
 ## License
 
 [MIT](LICENSE)

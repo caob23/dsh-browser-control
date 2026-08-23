@@ -28,16 +28,15 @@
 			display: flex; align-items: center; justify-content: center;
 			background: #e2e8f0; transition: background .3s;
 		}
-		.ring.open { background: #fee2e2; }
-		.ring.on { background: #dcfce7; }
+		.ring.open { background: #dcfce7; }
 		.ring.connecting { background: #fef3c7; }
+		.ring.idle { background: #e2e8f0; }
 		.dot {
 			width: 18px; height: 18px; border-radius: 50%; background: #94a3b8;
 			transition: all .3s;
 		}
-		.ring.on .dot { background: #16a34a; box-shadow: 0 0 0 0 rgba(22, 163, 74, .45); animation: pulse 2s infinite; }
+		.ring.open .dot { background: #16a34a; box-shadow: 0 0 0 0 rgba(22, 163, 74, .45); animation: pulse 2s infinite; }
 		.ring.connecting .dot { background: #d97706; }
-		.ring.open .dot { background: #dc2626; }
 		@keyframes pulse {
 			0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, .40); }
 			70% { box-shadow: 0 0 0 12px rgba(22, 163, 74, 0); }

@@ -10,8 +10,8 @@
   <a href="https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"><img src="https://img.shields.io/badge/Chrome-MV3-yellow?style=flat-square" alt="chrome mv3"></a>
   <a href="https://github.com/topics/dsh-plugin"><img src="https://img.shields.io/badge/DSH-Plugin-purple?style=flat-square" alt="dsh plugin"></a>
   <img src="https://img.shields.io/badge/CDP-powered-orange?style=flat-square" alt="cdp">
-  <img src="https://img.shields.io/badge/Tools-11_ browser_*-red?style=flat-square" alt="11 tools">
-  <a href="https://github.com/caob23/dsh-browser-control/actions"><img src="https://img.shields.io/badge/Tests-29%2F29-brightgreen?style=flat-square" alt="tests"></a>
+  <img src="https://img.shields.io/badge/tools-11-red?style=flat-square" alt="11 browser tools">
+  <img src="https://img.shields.io/badge/tests-29%2F29-brightgreen?style=flat-square" alt="tests">
 </p>
 
 Chrome 浏览器扩展 + DeepSeek Harness 插件，让 AI Agent 像人一样操控你的真实浏览器。
@@ -34,6 +34,23 @@ Chrome 扩展（CDP 驱动）
 结果返回给 Agent
 ```
 
+## 和 MCP 浏览器方案的区别
+
+市面上已经有 Playwright MCP、Puppeteer MCP、browser-use 等，它们的共同点：启动一个**自己下载的全新浏览器实例**。本项目走的是另一条路：
+
+| | 本项目 | Playwright / Puppeteer MCP |
+|---|---|---|
+| 浏览器 | 你正在用的真实 Chrome | 自动下载的独立实例 |
+| 登录态 / Cookies | ✅ 全部继承，无需重新登录 | ❌ 每次全新 profile |
+| 过验证码 / 扫码登录 | 你的会话已经登录，基本不遇到 | 经常卡在登录墙 |
+| 可见性 | 屏幕上实时可见，随时鼠标接管 | 无头运行或独立窗口 |
+| 环境依赖 | 无需 Node / npx / Python | 需要 npx 或 uvx 运行时 |
+| 接入方式 | 加载扩展 + 设置页开关 | 编辑 MCP 客户端 JSON 配置 |
+| 磁盘占用 | 复用现有 Chrome，零新增 | 额外下载数百 MB 浏览器 |
+| 集成深度 | dsh 原生插件（设置卡片 / 状态页 / 清理按钮） | 通用 MCP server |
+
+一句话：**要 AI 用"你自己的"浏览器干活（已登录的 B 站、知乎、淘宝后台），用本项目；要做跨浏览器、跨应用的通用自动化测试，用 MCP。**
+
 ## 下载
 
 | 文件 | 说明 |
@@ -43,9 +60,9 @@ Chrome 扩展（CDP 驱动）
 
 ## 安装 Chrome 扩展（30 秒）
 
-下载 zip → 解压 → Chrome 打开 `chrome://extensions` → 开启「开发者模式」→ 点「加载已解压的扩展程序」→ 选解压后的文件夹。
+下载 zip → 解压到固定文件夹（别删）→ Chrome 打开 `chrome://extensions` → 开启「开发者模式」→ 点「加载已解压的扩展程序」→ 选解压后的文件夹。
 
-工具栏出现鲸鱼图标 = 成功。
+工具栏出现鲸鱼图标 = 成功。需要 Chrome 116+。
 
 ## 安装 dsh 插件（1 分钟）
 
@@ -57,33 +74,41 @@ cd dsh-browser-control
 ./install.sh /你的路径/deepseek-harness
 ```
 
+脚本只负责把插件文件复制到位，**完成后仍需手动改三处配置**（同方式 B 的第 2 步），改完重启 dsh 才会生效。
+
 ### 方式 B：手动安装
 
-下载 [`dsh-browser-bridge-plugin-v1.0.0.zip`](../../releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
+下载 [`dsh-browser-bridge-plugin-v1.0.0.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.0/dsh-browser-bridge-plugin-v1.0.0.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
 
 然后补充三处配置：
 
-1. `packages/bundle/base/package.json` 加一行依赖：
+1. `packages/bundle/base/package.json` 的 dependencies 加：
 
-    "@deepseek-ai/dsh-browser-bridge": "workspace:^"
+```json
+"@deepseek-ai/dsh-browser-bridge": "workspace:^"
+```
 
 2. `cordis.patch.yml` 的 plugins 列表加：
 
-    - id: browser-bridge
-      name: '@deepseek-ai/dsh-browser-bridge'
-      config:
-        enabled: false
+```yaml
+- id: browser-bridge
+  name: '@deepseek-ai/dsh-browser-bridge'
+  config:
+    enabled: false
+```
 
 3. `tsconfig.host.json` 的 references 加：
 
-    { "path": "./packages/web/browser-bridge" }
+```json
+{ "path": "./packages/web/browser-bridge" }
+```
 
-重启 dsh → 设置页出现「DSH 浏览器控制」→ 开启即可。
+重启 dsh → 设置页出现「DSH 浏览器控制」→ 开启即可。详细说明见 [dsh-config/README.md](dsh-config/README.md)。
 
 ## 使用
 
 1. dsh 设置 → 插件 → DSH 浏览器控制 → 开启
-2. Chrome 扩展自动连接（端口 9777，Token: dsh-local）
+2. Chrome 扩展自动连接（端口 9777，Token 默认 dsh-local）
 3. 对话说自然语言，Agent 自动操控浏览器
 
 访问 `http://127.0.0.1:9777/` 查看连接状态。
@@ -130,13 +155,13 @@ Chrome 浏览器
 | 单元测试 29/29 | ✅ |
 | 类型检查（host + client） | ✅ |
 
-## v1.0.0 更新
+<!-- TODO: 补一张真实操作演示截图（assets/demo.png）后取消注释：
+![演示](assets/demo.png)
+-->
 
-- 🐳 新增鲸鱼 Logo（扩展 + 弹窗 + 状态页 SVG）
-- 📌 持久 debugger 附着（横幅始终显示）
-- 🔧 端口配置（简化自完整 URL）
-- 🖥️ 状态页 SVG logo + 暗色卡片样式
-- ✅ 29/29 测试通过
+## 更新日志
+
+见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## License
 

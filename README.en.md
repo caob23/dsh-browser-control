@@ -1,15 +1,15 @@
 # DSH Browser Control
 
 <p align="center">
+  <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
+</p>
+
+<p align="center">
   <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
 </p>
 
 <p align="center">
   <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
-</p>
-
-<p align="center">
-  <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
 </p>
 
 <p align="center">

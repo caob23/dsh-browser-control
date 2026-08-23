@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.1 (2026-08-23)
+
+- Fixed: connected state now shows a green pulsing dot (was red due to a CSS class mismatch)
+- Added: one-click "Disconnect" button in the popup; auto-reconnect stays off until you click "Connect"
+- Docs: whale banner illustration, bilingual README/CONTRIBUTING/SECURITY (Chinese default)
+- Docs: dynamic release/license badges, plastic badge style
+
 ## v1.0.0 (2026-08-22)
 
 - Whale icon for extension, popup, and status page

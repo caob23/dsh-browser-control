@@ -204,6 +204,12 @@ Chrome 浏览器
 
 见 [CHANGELOG.md](CHANGELOG.md)。
 
-## License
+## 许可证 · License
 
-[MIT](LICENSE)
+本项目采用 **GNU Affero General Public License v3.0 (AGPL-3.0)**。
+
+- **个人 / 学术 / 非商业用途**：完全免费，在遵守 AGPL-3.0 的前提下自由使用、修改、分发
+- **企业 / 商业用途**：AGPL-3.0 要求通过网络使用本软件也构成"分发"，必须公开衍生代码。若企业在闭源产品中嵌入、基于本项目构建 SaaS 服务而不愿开源，需要联系作者获取**商业许可**（另行协商授权条款）
+- **商业许可咨询**：[GitHub Issues](https://github.com/caob23/dsh-browser-control/issues) 或邮箱 **caob2333@outlook.com**
+
+完整许可证文本见 [LICENSE](LICENSE) 文件（AGPL-3.0）。

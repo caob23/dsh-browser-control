@@ -207,4 +207,10 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-[MIT](LICENSE)
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+- **Personal / academic / non-commercial use**: completely free — use, modify, and distribute freely under AGPL-3.0 terms
+- **Enterprise / commercial use**: AGPL-3.0 treats networked use as distribution, requiring derivative code to be published. If you want to embed this project in closed-source products or build a SaaS on it without open-sourcing, contact the author for a **commercial license** (terms negotiated separately)
+- **Commercial licensing inquiries**: [GitHub Issues](https://github.com/caob23/dsh-browser-control/issues) or email **caob2333@outlook.com**
+
+See the [LICENSE](LICENSE) file for the full license text (AGPL-3.0).

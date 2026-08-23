@@ -1,5 +1,13 @@
 # 更新日志
 
+## v1.0.4 (2026-08-23)
+
+- 变更：许可证 MIT → **AGPL-3.0**。个人/学术/非商业免费；企业闭源商用需商业许可（联系：GitHub Issues 或 caob2333@outlook.com）
+- 文档：SECURITY.md 允许非可利用问题直接提 Issue（中英双语）
+- 文档：dsh-config/README.md 重写为配置项参考（patch 字段、默认值、用户层覆盖示例）
+- 清理：移除 tests/、fixtures/ 与未使用的 icon-svg.ts；英文文档归档到 docs/en/
+- 安装方式与 v1.0.3 一致：npm / GitHub / 本地 file: 三种来源
+
 ## v1.0.3 (2026-08-23)
 
 - 新增：插件按 dsh Profile Bundle 规范打包，一条命令安装

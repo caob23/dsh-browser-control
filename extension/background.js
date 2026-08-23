@@ -43,6 +43,16 @@ let manualDisconnect = false;
  *  explicit disconnect, tab close, or DevTools stealing the tab. */
 const attachedTabs = new Set();
 
+/**
+ * Native dialog (alert/confirm/prompt) auto-answer policy. 'accept' answers
+ * every dialog as OK (prompt uses defaultText), 'dismiss' cancels, 'manual'
+ * leaves dialogs open. A command can pass params.dialogPolicy to override for
+ * that call's duration; the default is accept so automation never deadlocks.
+ */
+let dialogPolicy = 'accept';
+/** Dialogs answered since attach, surfaced in results for verification. */
+const dialogLog = [];
+
 /* ------------------------------------------------------------------ config */
 
 async function loadConfig() {
@@ -228,6 +238,18 @@ function waitTabComplete(tabId, timeoutMs) {
 	});
 }
 
+/** Activate a tab and its window so it receives real keyboard focus. Input
+ *  events dispatched to an unfocused tab go nowhere (document.hasFocus() is
+ *  false and the page never sees the keys). A minimized window reports a
+ *  0x0 viewport — every coordinate lands offscreen — so restore it first. */
+async function activateTabWindow(tabId) {
+	try {
+		const tab = await chrome.tabs.get(tabId);
+		await chrome.windows.update(tab.windowId, { focused: true, state: 'normal' });
+		await chrome.tabs.update(tabId, { active: true });
+	} catch { /* tab may be closing; input will fail downstream anyway */ }
+}
+
 /* ---------------------------------------------------------- debugger (CDP) — persistent attachment */
 
 /**
@@ -242,13 +264,37 @@ async function ensureAttached(tabId) {
 			const err = chrome.runtime.lastError;
 			if (!err) { attachedTabs.add(tabId); resolve(); return; }
 			if (/already attached/i.test(err.message)) {
-				reject(new Error(`debugger attach failed: ${err.message} (DevTools 打开着这个页面? 先关掉)`));
+				attachedTabs.add(tabId);
+				resolve();
 				return;
 			}
-			reject(new Error(`debugger attach failed: ${err.message}`));
+			reject(new Error(`debugger attach failed: ${err.message} (DevTools 打开着这个页面? 先关掉)`));
 		});
 	});
+	// Enable the domains whose events we consume (dialogs, navigation results).
+	await dbgSend(tabId, 'Page.enable').catch(() => {});
 }
+
+/* Native dialog auto-answer: fires whenever the page opens alert/confirm/
+ * prompt/beforeunload while a debugger is attached. Without an answer the
+ * page's main thread stays blocked forever. */
+chrome.debugger.onEvent.addListener((source, method, params) => {
+	if (method !== 'Page.javascriptDialogOpening' || source?.tabId === undefined) return;
+	const tabId = source.tabId;
+	const entry = {
+		tabId, type: params.type, message: params.message,
+		defaultPrompt: params.defaultPrompt, answeredAs: dialogPolicy, t: Date.now(),
+	};
+	dialogLog.push(entry);
+	if (dialogLog.length > 50) dialogLog.shift();
+	if (dialogPolicy === 'manual') return;
+	chrome.debugger.sendCommand(
+		{ tabId },
+		'Page.handleJavaScriptDialog',
+		{ accept: dialogPolicy === 'accept', promptText: params.defaultPrompt },
+		() => void chrome.runtime.lastError,
+	);
+});
 
 function detachTab(tabId) {
 	attachedTabs.delete(tabId);
@@ -299,12 +345,12 @@ async function cmdBrowserInfo() {
 
 async function cmdTabsList() {
 	const tabs = await chrome.tabs.query({});
+	// Compact shape (id/url/active/title only): the bridge serializes this
+	// straight into a tool result and wide shapes were truncating mid-JSON.
 	return {
-		tabs: tabs.map((t) => ({
-			id: t.id, windowId: t.windowId, index: t.index,
-			title: t.title, url: t.url, active: t.active, pinned: t.pinned,
-			audible: Boolean(t.audible),
-		})),
+		count: tabs.length,
+		activeTabId: tabs.find((t) => t.active)?.id,
+		tabs: tabs.map((t) => ({ id: t.id, url: t.url, title: t.title, active: t.active })),
 	};
 }
 
@@ -337,7 +383,37 @@ async function cmdNav(params) {
 	await chrome.tabs.update(tab.id, { url: params.url });
 	if (params.wait !== false) await waitTabComplete(tab.id, Number(params.timeoutMs) || 15_000);
 	const fresh = await chrome.tabs.get(tab.id).catch(() => null);
-	return { tabId: tab.id, url: fresh?.url, title: fresh?.title };
+	// Chrome lands dead navigations on an internal error page, but tabs.get()
+	// keeps reporting the ORIGINAL url — only in-page location.href reveals
+	// chrome-error://. Probe it so callers can react structurally.
+	let landedUrl = '';
+	try {
+		landedUrl = await withCDP(tab.id, (send) => send('Runtime.evaluate', {
+			expression: 'location.href', awaitPromise: false, returnByValue: true, userGesture: true,
+		}).then((r) => String(r.result?.value ?? '')));
+	} catch { /* no debugger possible (e.g. chrome:// pages) — fall through */ }
+	let siteUnreachable;
+	if (/^chrome-error:/.test(landedUrl)) {
+		let errText = '';
+		try {
+			errText = await withCDP(tab.id, (send) => send('Runtime.evaluate', {
+				expression: 'document.body ? document.body.innerText.slice(0, 4000) : ""',
+				awaitPromise: false, returnByValue: true, userGesture: true,
+			}).then((r) => String(r.result?.value ?? '')));
+		} catch { /* classification falls back below */ }
+		// Error-page copy is localized (zh-CN shows 无法找到 … 的 DNS 地址,
+		// en-US shows ERR_NAME_NOT_RESOLVED); match either plus any bare DNS
+		// mention such as DNS_PROBE_STARTED.
+		const dns = /ERR_NAME_NOT_RESOLVED|ERR_DNS_TIMED_OUT|\bDNS\b|无法找到.{0,40}(DNS|服务器)/i.test(errText)
+			|| /ERR_NAME_NOT_RESOLVED|dns/i.test(fresh?.title ?? '');
+		siteUnreachable = { reason: dns ? 'dns' : 'unreachable' };
+	}
+	return {
+		tabId: tab.id,
+		url: siteUnreachable ? params.url : (fresh?.url ?? params.url),
+		title: siteUnreachable ? undefined : fresh?.title,
+		...(siteUnreachable ? { siteUnreachable } : {}),
+	};
 }
 
 async function cmdEval(params) {
@@ -345,21 +421,107 @@ async function cmdEval(params) {
 		throw new Error('params.expression is required');
 	}
 	const tab = await resolveTab(params.tabId);
-	const value = await withCDP(tab.id, (send) => {
+	// Frame targeting: params.frameSelector (CSS selector of an <iframe>) runs
+	// the expression inside that frame via contentDocument (same-origin).
+	// Cross-origin frames need a separate debugger target — reported clearly.
+	let expression = params.expression;
+	if (Array.isArray(params.argNames) && Array.isArray(params.args)
+		&& params.argNames.length === params.args.length && params.argNames.length > 0) {
+		const argValues = params.args.map((a) => JSON.stringify(a)).join(', ');
+		expression = `((${params.argNames.join(', ')}) => { ${params.expression} })(${argValues})`;
+	}
+	if (params.frameSelector) {
+		const inner = expression.startsWith('(') ? expression : `(() => { ${expression} })()`;
+		// Rebind document/window to the frame by passing them as parameters of
+		// the wrapping arrow — parameter shadowing, no TDZ hazard. A `const
+		// document = doc` declaration in the same scope would throw
+		// "Cannot access 'document' before initialization" at the host lookup
+		// above it.
+		expression = `(() => {
+			const host = document.querySelector(${JSON.stringify(String(params.frameSelector))});
+			if (!host || !(host instanceof HTMLIFrameElement)) throw new Error('iframe not found: ${String(params.frameSelector).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}');
+			if (!host.contentDocument) throw new Error('cross-origin iframe: same-origin only supported, use a frame-specific tool');
+			const doc = host.contentDocument, win = host.contentWindow;
+			return ((document, window) => ${inner})(doc, win);
+		})()`;
+	}
+	// params.timeoutMs races the evaluation: a hung awaitPromise (looping
+	// promise, blocked page) must fail at the caller's budget instead of
+	// riding the bridge-wide 60s default.
+	const evalTimeoutMs = Math.min(120_000, Math.max(100, Number(params.timeoutMs) || 0)) || null;
+	const raceTimeout = (ms) => new Promise((_, reject) => setTimeout(() => {
+		const err = new Error(`eval timeout after ${ms}ms`);
+		err.code = 'eval_timeout';
+		reject(err);
+	}, ms));
+	const evaluate = withCDP(tab.id, async (send) => {
+		// Evaluate WITHOUT returnByValue first: the RemoteObject's type/subtype
+		// metadata tells us honestly what came back. Newer Chrome serializes
+		// un-serializable objects to `{}` under returnByValue:true, which would
+		// masquerade as a legitimate empty object.
 		return send('Runtime.evaluate', {
-			expression: params.expression,
+			expression,
 			awaitPromise: params.awaitPromise !== false,
-			returnByValue: true,
+			returnByValue: false,
 			userGesture: true,
-		}).then((res) => {
+		}).then(async (res) => {
 			if (res.exceptionDetails) {
 				const d = res.exceptionDetails;
-				throw new Error(`page exception: ${d.exception?.description ?? d.text}`);
+				const desc = String(d.exception?.description ?? d.text);
+				if (CONTEXT_DESTROYED_RE.test(desc)) {
+					const err = new Error('context_destroyed: page navigated while evaluate was pending');
+					err.code = 'context_destroyed';
+					throw err;
+				}
+				throw new Error(`page exception: ${desc}`);
 			}
-			return res.result;
+			const ro = res.result;
+			// Primitives carry their value inline; nothing more to transfer.
+			const isPrimitiveLike = ro.type === 'number' || ro.type === 'string' || ro.type === 'boolean'
+				|| ro.type === 'bigint' || ro.type === 'undefined' || ro.subtype === 'null';
+			if (isPrimitiveLike || !ro.objectId) return ro;
+			// Objects known un-serializable by value get an honest report instead
+			// of a silent {} (DOM nodes, functions, proxies, symbols, Map/Set…).
+			const NOT_BY_VALUE = new Set(['node', 'function', 'proxy', 'symbol', 'map', 'set',
+				'weakmap', 'weakset', 'iterator', 'generator']);
+			if (NOT_BY_VALUE.has(ro.subtype ?? '') || ro.type === 'function' || ro.type === 'symbol') return ro;
+			// Transfer by value without re-executing the expression:
+			// callFunctionOn(identity) on the existing objectId.
+			const ser = await send('Runtime.callFunctionOn', {
+				objectId: ro.objectId,
+				functionDeclaration: 'function () { return this; }',
+				returnByValue: true,
+			});
+			if (ser.exceptionDetails) return ro;
+			return { ...ro, value: ser.result.value };
+		}).catch((err) => {
+			// Protocol-level variant: Chrome rejects the whole sendCommand with
+			// -32000 "Inspected target navigated or closed" when the target dies
+			// mid-call; surface it under the same structural code.
+			if (err instanceof Error && CONTEXT_DESTROYED_RE.test(err.message)) {
+				const wrapped = new Error('context_destroyed: page navigated while evaluate was pending');
+				wrapped.code = 'context_destroyed';
+				throw wrapped;
+			}
+			throw err;
 		});
 	});
-	return { tabId: tab.id, value: value.value === undefined ? null : value.value, valueType: value.type };
+	const value = evalTimeoutMs
+		? await Promise.race([evaluate, raceTimeout(evalTimeoutMs)])
+		: await evaluate;
+	// Serialize what we honestly got. `value` here is a RemoteObject; a
+	// missing `.value` on a non-primitive means transfer was impossible.
+	let out;
+	if (value.value !== undefined) {
+		out = value.value;
+	} else if (value.type === 'undefined') {
+		out = null;
+	} else if (value.subtype === 'node') {
+		out = `[dom:${value.className ?? 'Node'} — wrap in JSON.stringify() or read specific properties]`;
+	} else {
+		out = `[${value.type}${value.subtype ? `:${value.subtype}` : ''}: not serializable — wrap the expression in JSON.stringify()]`;
+	}
+	return { tabId: tab.id, value: out, valueType: value.type };
 }
 
 async function cmdContent(params) {
@@ -408,6 +570,9 @@ async function cmdFind(params) {
 async function cmdClick(params) {
 	if (!params.selector) throw new Error('params.selector is required');
 	const tab = await resolveTab(params.tabId);
+	// Mouse events land on whatever is under the viewport coordinates of the
+	// focused tab; ensure our tab is frontmost so coordinates are meaningful.
+	await activateTabWindow(tab.id);
 	return withCDP(tab.id, async (send) => {
 		const hit = await send('Runtime.evaluate', {
 			expression: `(() => {
@@ -415,8 +580,13 @@ async function cmdClick(params) {
 				if (!el) return null;
 				el.scrollIntoView({ block: 'center', inline: 'center' });
 				const r = el.getBoundingClientRect();
-				return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2),
-					tag: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 120) };
+				// elementFromPoint at the intended hit point catches overlays
+				// (sticky headers, ads) that would swallow the click.
+				const x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2);
+				const topEl = document.elementFromPoint(x, y);
+				const isTop = topEl === el || el.contains(topEl);
+				return { x, y, tag: el.tagName.toLowerCase(), text: (el.textContent || '').trim().slice(0, 120),
+					hitTag: topEl ? topEl.tagName.toLowerCase() : null, isTop };
 			})()`,
 			awaitPromise: false, returnByValue: true, userGesture: true,
 		}).then((res) => {
@@ -428,7 +598,13 @@ async function cmdClick(params) {
 		await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: hit.x, y: hit.y });
 		await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: hit.x, y: hit.y, button: 'left', clickCount });
 		await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: hit.x, y: hit.y, button: 'left', clickCount });
-		return { tabId: tab.id, clicked: hit };
+		return {
+			tabId: tab.id,
+			clicked: { x: hit.x, y: hit.y, tag: hit.tag, text: hit.text },
+			hitVerified: hit.isTop,
+			...(hit.isTop ? {} : { hitInstead: hit.hitTag }),
+			dialogsAnswered: dialogLog.filter((d) => d.tabId === tab.id && Date.now() - d.t < 5000).length,
+		};
 	});
 }
 
@@ -436,37 +612,114 @@ async function cmdInput(params) {
 	if (!params.selector) throw new Error('params.selector is required');
 	if (params.value === undefined) throw new Error('params.value is required');
 	const tab = await resolveTab(params.tabId);
-	const result = await withCDP(tab.id, (send) => send('Runtime.evaluate', {
+	// 'type' mode drives the real keyboard pipeline (Input.insertText per
+	// keystroke) so stateful components (React-controlled, search bars with
+	// internal suggestion state) observe every character. 'fill' (default)
+	// sets the value directly — fast, but bypasses component keystroke logic.
+	const mode = params.mode === 'type' ? 'type' : 'fill';
+	// Real key events require the tab to have OS-level focus; activate first.
+	if (mode === 'type') await activateTabWindow(tab.id);
+
+	// Locate + focus + clear in one evaluate, shared by both modes.
+	const located = await withCDP(tab.id, (send) => send('Runtime.evaluate', {
 		expression: `(() => {
 			const el = document.querySelector(${JSON.stringify(String(params.selector))});
 			if (!el) return null;
+			el.scrollIntoView({ block: 'center', inline: 'center' });
 			el.focus();
-			const value = ${JSON.stringify(String(params.value))};
+			let tag = el.tagName.toLowerCase();
+			let cleared = '';
 			if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
 				const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-				Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value);
+				Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, '');
 				el.dispatchEvent(new Event('input', { bubbles: true }));
-				el.dispatchEvent(new Event('change', { bubbles: true }));
+				tag = tag + '[' + (el.getAttribute('type') || 'text') + ']';
+				cleared = '';
 			} else if (el.isContentEditable) {
-				el.textContent = value;
+				el.textContent = '';
 				el.dispatchEvent(new InputEvent('input', { bubbles: true }));
 			} else if (el instanceof HTMLSelectElement) {
-				el.value = value;
-				el.dispatchEvent(new Event('change', { bubbles: true }));
-			} else {
-				el.textContent = value;
-				el.dispatchEvent(new Event('input', { bubbles: true }));
-				el.dispatchEvent(new Event('change', { bubbles: true }));
+				tag = 'select';
 			}
-			return { tag: el.tagName.toLowerCase(), value: String(el.value ?? el.textContent ?? '') };
+			return { tag };
 		})()`,
 		awaitPromise: false, returnByValue: true, userGesture: true,
 	}).then((res) => {
 		if (res.exceptionDetails) throw new Error(res.exceptionDetails.text);
 		return res.result.value;
 	}));
-	if (!result) throw new Error(`element not found: ${params.selector}`);
-	return { tabId: tab.id, filled: result };
+	if (!located) throw new Error(`element not found: ${params.selector}`);
+
+	if (mode === 'fill') {
+		const result = await withCDP(tab.id, (send) => send('Runtime.evaluate', {
+			expression: `(() => {
+				const el = document.querySelector(${JSON.stringify(String(params.selector))});
+				const value = ${JSON.stringify(String(params.value))};
+				if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+					const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+					Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value);
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				} else if (el.isContentEditable) {
+					el.textContent = value;
+					el.dispatchEvent(new InputEvent('input', { bubbles: true }));
+				} else if (el instanceof HTMLSelectElement) {
+					el.value = value;
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				} else {
+					el.textContent = value;
+					el.dispatchEvent(new Event('input', { bubbles: true }));
+					el.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+				return { tag: el.tagName.toLowerCase(), value: String(el.value ?? el.textContent ?? '') };
+			})()`,
+			awaitPromise: false, returnByValue: true, userGesture: true,
+		}).then((res) => {
+			if (res.exceptionDetails) throw new Error(res.exceptionDetails.text);
+			return res.result.value;
+		}));
+		return { tabId: tab.id, mode, filled: result };
+	}
+
+	// 'type' mode: per-character real key events. dispatchKeyEvent with the
+	// text field performs a full keyDown→char→keyUp; insertText would skip
+	// per-key keydown handlers, so we use rawKeyDown+char for letters and
+	// dispatchKeyEvent(text=…) for everything else.
+	const text = String(params.value);
+	return withCDP(tab.id, async (send) => {
+		for (const ch of text) {
+			if (ch === '\n') {
+				await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: 'Enter', windowsVirtualKeyCode: 13, code: 'Enter', text: '\r' });
+				await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', windowsVirtualKeyCode: 13, code: 'Enter' });
+				continue;
+			}
+			// Non-ASCII (CJK, emoji) cannot travel through keyEvent text — the
+			// protocol mangles them to '?'. Route them through insertText which
+			// performs a real composition-style insertion; ASCII keeps full
+			// keyDown/char/keyUp so per-key handlers still fire.
+			if (ch.charCodeAt(0) > 127 || ch.codePointAt(0) > 0xFFFF) {
+				await send('Input.insertText', { text: ch });
+				continue;
+			}
+			await send('Input.dispatchKeyEvent', {
+				type: 'keyDown', key: ch, text: ch, unmodifiedText: ch,
+				windowsVirtualKeyCode: ch.toUpperCase().charCodeAt(0),
+			});
+			// NOTE: no separate 'char' event — Chrome inserts the character from
+			// keyDown's text field; an explicit char event duplicates the input.
+			await send('Input.dispatchKeyEvent', { type: 'keyUp', key: ch, windowsVirtualKeyCode: ch.toUpperCase().charCodeAt(0) });
+		}
+		// Read back what actually landed in the element.
+		const readBack = await send('Runtime.evaluate', {
+			expression: `(() => {
+				const el = document.querySelector(${JSON.stringify(String(params.selector))});
+				if (!el) return null;
+				return { tag: el.tagName.toLowerCase(), value: String(el.value ?? el.textContent ?? '') };
+			})()`,
+			awaitPromise: false, returnByValue: true, userGesture: true,
+		}).then((res) => res.result.value);
+		return { tabId: tab.id, mode, filled: readBack };
+	});
 }
 
 const KEY_CODES = {
@@ -483,6 +736,8 @@ async function cmdPress(params) {
 	const key = String(params.key ?? '');
 	if (key.length === 0) throw new Error('params.key is required');
 	const tab = await resolveTab(params.tabId);
+	// Key events need OS focus; a background tab swallows them silently.
+	await activateTabWindow(tab.id);
 	let keyCode, code;
 	if (KEY_CODES[key]) { [keyCode, code] = KEY_CODES[key]; }
 	else if (key.length === 1) {
@@ -492,6 +747,7 @@ async function cmdPress(params) {
 	}
 	const text = params.text !== undefined
 		? String(params.text)
+		: key === 'Enter' ? '\r' // '\r' makes keyDown perform implicit form submission
 		: key.length === 1 && !(params.modifiers ?? []).some((m) => m in MODIFIER_BITS && m !== 'shift') ? key : undefined;
 	let modifiers = 0;
 	for (const m of params.modifiers ?? []) modifiers |= MODIFIER_BITS[String(m).toLowerCase()] ?? 0;
@@ -510,11 +766,51 @@ async function cmdPress(params) {
 async function cmdScreenshot(params) {
 	const tab = await resolveTab(params.tabId);
 	const format = params.format === 'jpeg' ? 'jpeg' : 'png';
-	const res = await withCDP(tab.id, (send) => send('Page.captureScreenshot', {
-		format, quality: format === 'jpeg' ? Math.min(100, Math.max(1, Number(params.quality) || 80)) : undefined,
-		captureBeyondViewport: Boolean(params.fullPage),
-	}));
-	return { tabId: tab.id, format, base64: res.data, tabTitle: tab.title, tabUrl: tab.url };
+	const res = await withCDP(tab.id, async (send) => {
+		// Element capture: resolve the selector to a CSS-pixel rect, then pass
+		// it as clip. Page.captureScreenshot's clip is in CSS pixels and it
+		// handles DPR internally (unlike raw base64 math).
+		if (params.selector) {
+			const rect = await send('Runtime.evaluate', {
+				expression: `(() => {
+					const el = document.querySelector(${JSON.stringify(String(params.selector))});
+					if (!el) return null;
+					el.scrollIntoView({ block: 'center', inline: 'center' });
+					const r = el.getBoundingClientRect();
+					return { x: r.left, y: r.top, width: r.width, height: r.height };
+				})()`,
+				awaitPromise: false, returnByValue: true, userGesture: true,
+			}).then((r) => {
+				if (r.exceptionDetails) throw new Error(r.exceptionDetails.text);
+				return r.result.value;
+			});
+			if (!rect) throw new Error(`element not found: ${params.selector}`);
+			return send('Page.captureScreenshot', {
+				format,
+				quality: format === 'jpeg' ? Math.min(100, Math.max(1, Number(params.quality) || 80)) : undefined,
+				clip: { ...rect, scale: 1 },
+			}).then((shot) => ({ shot, elementRect: rect }));
+		}
+		const shot = await send('Page.captureScreenshot', {
+			format,
+			quality: format === 'jpeg' ? Math.min(100, Math.max(1, Number(params.quality) || 80)) : undefined,
+			captureBeyondViewport: Boolean(params.fullPage),
+		});
+		return { shot };
+	});
+	return {
+		tabId: tab.id,
+		format,
+		base64: res.shot.data,
+		tabTitle: tab.title,
+		tabUrl: tab.url,
+		...(res.elementRect ? {
+			elementRect: {
+				x: Math.round(res.elementRect.x), y: Math.round(res.elementRect.y),
+				w: Math.round(res.elementRect.width), h: Math.round(res.elementRect.height),
+			},
+		} : {}),
+	};
 }
 
 async function cmdScroll(params) {
@@ -530,6 +826,9 @@ async function cmdScroll(params) {
 		awaitPromise: false, returnByValue: true, userGesture: true,
 	}).then((res) => res.result.value));
 }
+
+/** All CDP message variants that mean "the page went away mid-evaluation". */
+const CONTEXT_DESTROYED_RE = /Execution context was destroyed|Cannot find default execution context|Inspected target navigated or closed/i;
 
 const SNAPSHOT_SELECTOR = 'a[href], button, input, select, textarea, [role="button"], [role="link"], '
 	+ '[role="tab"], [role="checkbox"], [role="radio"], [contenteditable="true"], [onclick]';
@@ -556,6 +855,7 @@ async function cmdSnapshot(params) {
 					items.push({
 						ref, tag: el.tagName.toLowerCase(),
 						type: el.getAttribute('type') || undefined,
+						role: el.getAttribute('role') || undefined,
 						name: (el.getAttribute('aria-label') || el.getAttribute('placeholder')
 							|| (el.textContent || '').trim().replace(/\\s+/g, ' ')).slice(0, 80) || undefined,
 						value: isField || el instanceof HTMLSelectElement ? String(el.value ?? '').slice(0, 60) : undefined,
@@ -581,7 +881,58 @@ const COMMANDS = {
 	nav: cmdNav, eval: cmdEval, content: cmdContent, find: cmdFind,
 	click: cmdClick, input: cmdInput, press: cmdPress, scroll: cmdScroll,
 	snapshot: cmdSnapshot, screenshot: cmdScreenshot,
+	wait: cmdWait, dialog: cmdDialogPolicy,
 };
+
+/**
+ * Explicit wait primitive: poll until a selector appears, page text contains
+ * a string, or a predicate function returns truthy. Polls inside the page via
+ * requestAnimationFrame-ish loop (50ms interval) — no bridge round-trips.
+ */
+async function cmdWait(params) {
+	const tab = await resolveTab(params.tabId);
+	const timeoutMs = Math.min(120_000, Math.max(100, Number(params.timeoutMs) || 15_000));
+	let condition;
+	if (params.selector) {
+		condition = `!!document.querySelector(${JSON.stringify(String(params.selector))})`;
+	} else if (typeof params.text === 'string') {
+		condition = `(document.body && document.body.innerText.includes(${JSON.stringify(params.text)}))`;
+	} else if (typeof params.fn === 'string' && params.fn.length > 0) {
+		// Accept both a predicate function ("() => x.ready") and a bare boolean
+		// expression ("x.ready === true"): call function values, evaluate
+		// everything else as-is.
+		condition = `(() => { const f = (${params.fn}); return typeof f === 'function' ? Boolean(f()) : Boolean(f); })()`;
+	} else {
+		throw new Error('provide one of selector, text, or fn');
+	}
+	return withCDP(tab.id, async (send) => {
+		const started = Date.now();
+		for (;;) {
+			const res = await send('Runtime.evaluate', {
+				expression: condition,
+				awaitPromise: false, returnByValue: true, userGesture: true,
+			}).catch(() => ({ result: { value: false } }));
+			if (res.exceptionDetails) throw new Error(`wait condition error: ${res.exceptionDetails.text}`);
+			if (res.result.value === true) return { tabId: tab.id, waited: Date.now() - started };
+			if (Date.now() - started >= timeoutMs) throw new Error(`wait timeout after ${timeoutMs}ms`);
+			await new Promise((r) => setTimeout(r, 50));
+		}
+	});
+}
+
+/**
+ * Read or set the native-dialog auto-answer policy. GET: {action:'get'} →
+ * {policy, recent}. SET: {action:'set', policy:'accept'|'dismiss'|'manual'}.
+ * Recent dialogs (last 50) are returned so callers can verify what happened.
+ */
+async function cmdDialogPolicy(params) {
+	if (params?.policy !== undefined) {
+		const p = String(params.policy);
+		if (!['accept', 'dismiss', 'manual'].includes(p)) throw new Error(`invalid dialog policy: ${p}`);
+		dialogPolicy = p;
+	}
+	return { policy: dialogPolicy, recent: dialogLog.slice(-10) };
+}
 
 /* ------------------------------------------------------------ popup link */
 

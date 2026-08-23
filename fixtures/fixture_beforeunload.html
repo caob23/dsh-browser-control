@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>BeforeUnload Fixture</title></head>
+<body>
+<h2>BeforeUnload Test</h2>
+<p>Arming beforeunload sets a handler that asks for confirmation on leave.</p>
+<button id="arm">Arm beforeunload</button>
+<script>
+document.getElementById('arm').onclick = () => {
+  window.onbeforeunload = (e) => { e.preventDefault(); e.returnValue = 'leave?'; };
+  document.title = 'ARMED';
+};
+</script>
+</body>
+</html>

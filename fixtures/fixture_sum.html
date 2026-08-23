@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Basic Form Demo - Sum Fixture (replica of demo.seleniumeasy.com/basic-first-form-demo.html)</title>
+<style>body{font-family:sans-serif;margin:40px}#sum1,#sum2{width:200px;padding:6px;margin-right:8px}button{padding:6px 14px}#displayvalue{display:inline-block;margin-top:16px;font-weight:bold;color:#28a745}</style>
+</head>
+<body>
+<h3>Two Input Fields</h3>
+<p>Enter value A and value B, then click "Get Total".</p>
+<form id="get-total-form" onsubmit="return false;">
+  <input type="text" id="sum1" placeholder="Enter value A">
+  <input type="text" id="sum2" placeholder="Enter value B">
+  <button type="button" onclick="return total()">Get Total</button>
+</form>
+<span id="displayvalue"></span>
+<script>
+  // 与原版 demo.seleniumeasy.com 一致的求和逻辑
+  function total() {
+    var a = document.getElementById('sum1').value;
+    var b = document.getElementById('sum2').value;
+    var s = Number(a) + Number(b);
+    document.getElementById('displayvalue').textContent =
+      (a !== '' && b !== '') ? ('Total a + b = ' + s) : 'NaN';
+    return false;
+  }
+</script>
+</body>
+</html>

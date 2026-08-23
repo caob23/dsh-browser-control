@@ -1,6 +1,6 @@
 # 贡献指南
 
-[English](CONTRIBUTING.en.md)
+[English](docs/en/CONTRIBUTING.en.md)
 
 ## 开发流程
 

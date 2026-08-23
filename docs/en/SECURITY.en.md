@@ -1,6 +1,6 @@
 # Security Policy
 
-[简体中文](SECURITY.md)
+[简体中文](../../SECURITY.md)
 
 ## Permissions requested
 

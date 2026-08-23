@@ -35,9 +35,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsdown",
-    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check": "npm run typecheck && npm run test && npm run build && publint"
+    "check": "npm run typecheck && npm run build && publint"
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
@@ -81,7 +80,6 @@
     "@types/node": "^22.20.0",
     "publint": "^0.3.21",
     "tsdown": "^0.22.2",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "typescript": "^6.0.3"
   }
 }

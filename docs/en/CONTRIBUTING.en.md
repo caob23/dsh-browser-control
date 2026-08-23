@@ -1,6 +1,6 @@
 # Contributing
 
-[简体中文](CONTRIBUTING.md)
+[简体中文](../../CONTRIBUTING.md)
 
 ## Development workflow
 

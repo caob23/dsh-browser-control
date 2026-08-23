@@ -1,6 +1,6 @@
 # 安全政策
 
-[English](SECURITY.en.md)
+[English](docs/en/SECURITY.en.md)
 
 ## 权限说明
 

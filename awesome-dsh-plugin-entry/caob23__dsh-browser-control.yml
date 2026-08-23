@@ -1,6 +1,0 @@
-url: https://github.com/caob23/dsh-browser-control
-name: caob23/dsh-browser-control
-category: browser
-description:
-  en: "Real browser control for DSH: Chrome extension driving live tabs via CDP with 11 browser_* tools, WebSocket bridge, and Settings toggle."
-  zh: "DSH 真实浏览器控制：Chrome 扩展通过 CDP 驱动实时标签页，11 个 browser_* 工具，WebSocket 桥接，设置页开关。"

@@ -63,8 +63,8 @@ Chrome 扩展（CDP 驱动）
 
 | 文件 | 说明 |
 |---|---|
-| [DSH-Browser-Control-1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/DSH-Browser-Control-1.0.1.zip) | Chrome 扩展（解压后加载） |
-| [dsh-browser-bridge-plugin-v1.0.1.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip) | dsh 插件 |
+| [DSH-Browser-Control-1.0.2.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.2/DSH-Browser-Control-1.0.2.zip) | Chrome 扩展（解压后加载） |
+| [dsh-browser-bridge-plugin-v1.0.2.zip](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.2/dsh-browser-bridge-plugin-v1.0.2.zip) | dsh 插件 |
 
 ## 安装 Chrome 扩展（30 秒）
 
@@ -86,7 +86,7 @@ cd dsh-browser-control
 
 ### 方式 B：手动安装
 
-下载 [`dsh-browser-bridge-plugin-v1.0.1.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.1/dsh-browser-bridge-plugin-v1.0.1.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
+下载 [`dsh-browser-bridge-plugin-v1.0.2.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.2/dsh-browser-bridge-plugin-v1.0.2.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
 
 然后补充三处配置：
 

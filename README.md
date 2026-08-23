@@ -1,6 +1,14 @@
 # DSH Browser Control
 
 <p align="center">
+  <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
+</p>
+
+<p align="center">
+  <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
   <img src="extension/icons/icon128.png" width="100" alt="DSH Browser Control">
 </p>
 
@@ -154,10 +162,6 @@ Chrome 浏览器
 | B 站搜索 → 统计视频卡片 + 截图 | ✅ |
 | 单元测试 29/29 | ✅ |
 | 类型检查（host + client） | ✅ |
-
-<!-- TODO: 补一张真实操作演示截图（assets/demo.png）后取消注释：
-![演示](assets/demo.png)
--->
 
 ## 更新日志
 

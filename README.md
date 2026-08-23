@@ -74,11 +74,31 @@ Chrome 扩展（CDP 驱动）
 
 ## 安装 dsh 插件（1 分钟）
 
-### 方式 A：一键安装（推荐）
+### 方式 A：一条命令（推荐，v1.0.3+）
+
+插件已按 dsh Profile Bundle 规范打包，`dsh plugin add` 直接装：
+
+```bash
+# 从 GitHub 安装（无需 npm 账号）
+dsh plugin --profile web add github:caob23/dsh-browser-control#v1.0.3
+
+# 或发布 npm 后从 registry 安装
+dsh plugin --profile web add @caob23/dsh-browser-control
+```
+
+然后 `dsh web` 重启该 Profile，dsh 设置 → 插件 → DSH 浏览器控制 → 开启即可。
+
+> 从旧版「复制进 harness 源码树」方式迁移：先删掉 `packages/web/browser-bridge/`
+> 旧副本并还原 base bundle 的三处配置，否则 `browser-bridge` id 会重复挂载。
+
+Headless 等其他 Profile 同理，把 `--profile web` 换成对应名字。
+
+### 方式 B：复制进 harness 源码树（旧方式，v1.0.2 及以前）
 
 ```bash
 git clone https://github.com/caob23/dsh-browser-control.git
 cd dsh-browser-control
+git checkout v1.0.2   # 旧布局在 v1.0.2 tag
 ./install.sh /你的路径/deepseek-harness
 ```
 

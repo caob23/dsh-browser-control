@@ -35,4 +35,3 @@ export interface Config {
 export declare const Config: z<Config>;
 /** Cordis plugin entry: wire the settings-driven lifecycle plus the model-facing tools. */
 export declare function apply(ctx: Context, config: Config): void;
-//# sourceMappingURL=index.d.ts.map

@@ -74,11 +74,32 @@ Whale icon in the toolbar = success. Requires Chrome 116+.
 
 ## Install the dsh plugin (1 minute)
 
-### Option A: one-line install (recommended)
+### Option A: one-line install (recommended, v1.0.3+)
+
+The plugin ships as a dsh Profile Bundle, so `dsh plugin add` just works:
+
+```bash
+# Install from GitHub (no npm account needed)
+dsh plugin --profile web add github:caob23/dsh-browser-control#v1.0.3
+
+# Or from the npm registry once published
+dsh plugin --profile web add @caob23/dsh-browser-control
+```
+
+Then `dsh web` to restart that Profile and toggle DSH Browser Control on under Settings → Plugins.
+
+> Migrating from the old "copy into the harness tree" layout: delete the old
+> `packages/web/browser-bridge/` copy and revert its three base-bundle config
+> edits first, otherwise the `browser-bridge` id mounts twice.
+
+Other profiles work the same way — swap `--profile web` for the profile name.
+
+### Option B: copy into the harness tree (legacy, v1.0.2 and earlier)
 
 ```bash
 git clone https://github.com/caob23/dsh-browser-control.git
 cd dsh-browser-control
+git checkout v1.0.2   # legacy layout lives at the v1.0.2 tag
 ./install.sh /path/to/deepseek-harness
 ```
 

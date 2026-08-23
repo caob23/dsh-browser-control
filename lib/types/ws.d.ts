@@ -33,4 +33,3 @@ export declare function encodeTextFrame(text: string): Buffer;
 export declare function encodeControlFrame(opcode: number, payload?: Buffer): Buffer;
 /** Build the close-frame bytes for a status code plus a UTF-8 reason within the 125-byte limit. */
 export declare function encodeCloseFrame(code: number, reason: string): Buffer;
-//# sourceMappingURL=ws.d.ts.map

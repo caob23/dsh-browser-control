@@ -1,5 +1,14 @@
 # 更新日志
 
+## v1.0.3 (2026-08-23)
+
+- 新增：插件按 dsh Profile Bundle 规范打包，一条命令安装
+  `dsh plugin --profile web add github:caob23/dsh-browser-control#v1.0.3`
+  （npm 发布后也可 `dsh plugin --profile web add @caob23/dsh-browser-control`）
+- 变更：npm 包名从 in-tree 的 `@deepseek-ai/dsh-browser-bridge` 改为用户 scope 的 `@caob23/dsh-browser-control`
+- 变更：插件源码上移到仓库根，独立于 harness 工作区构建（tsc + tsdown），构建产物 `lib/` 随仓库提交，GitHub 安装零编译
+- 旧「复制进 harness 源码树」方式保留在 v1.0.2 tag；迁移时删除旧副本避免 browser-bridge id 重复挂载
+
 ## v1.0.2 (2026-08-23)
 
 16 项验收意见修复，另加饱和回归中新发现并修复的 10 个缺陷。

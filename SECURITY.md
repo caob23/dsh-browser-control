@@ -30,4 +30,9 @@
 
 ## 报告安全问题
 
-请勿公开披露。通过 GitHub Security Advisories（仓库 Security 标签 → Report a vulnerability）私下报告。
+两种方式都可以：
+
+- **私下报告（推荐）**：GitHub Security Advisories（仓库 Security 标签 → Report a vulnerability）
+- **直接提 Issue**：如果问题不涉及可被利用的细节（如具体的攻击步骤、Token 绕过方法），直接开 Issue 描述即可
+
+涉及利用方式的问题请优先走私信渠道，避免被未修复时公开利用。

@@ -30,4 +30,9 @@ The extension requests these Chrome permissions:
 
 ## Reporting a vulnerability
 
-Do not open public issues. Report privately via GitHub Security Advisories (repo Security tab → Report a vulnerability).
+Either channel works:
+
+- **Private report (preferred)**: GitHub Security Advisories (repo Security tab → Report a vulnerability)
+- **Public issue**: fine for problems without exploitable details (no concrete attack steps, no token-bypass methods)
+
+For anything exploitable, please use the private channel so it is not abused before a fix ships.

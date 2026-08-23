@@ -1,27 +1,27 @@
-# Changelog
+# 更新日志
 
 ## v1.0.1 (2026-08-23)
 
-- Fixed: connected state now shows a green pulsing dot (was red due to a CSS class mismatch)
-- Added: one-click "Disconnect" button in the popup; auto-reconnect stays off until you click "Connect"
-- Docs: whale banner illustration, bilingual README/CONTRIBUTING/SECURITY (Chinese default)
-- Docs: dynamic release/license badges, plastic badge style
+- 修复：已连接时圆点显示为绿色呼吸动画（此前因 CSS 类名错位误显示红色）
+- 新增：弹窗一键「断开连接」；断开后不再自动重连，点「立即连接」恢复
+- 文档：新增鲸鱼插画横幅，README / CONTRIBUTING / SECURITY 中英双语（中文默认）
+- 文档：版本号和 License 徽章改为动态读取，徽章换成经典塑料风格
 
 ## v1.0.0 (2026-08-22)
 
-- Whale icon for extension, popup, and status page
-- SVG inline logo on status page
-- Persistent debugger attachment (stable Chrome banner)
-- Port-based config (simplified from full URL)
-- Styled dark-mode status page with connection info
+- 扩展、弹窗、状态页统一鲸鱼图标
+- 状态页内嵌 SVG logo
+- 持久 debugger 附着（控制期间 Chrome 横幅稳定显示）
+- 配置简化为端口模式（替代完整 URL）
+- 状态页暗色卡片样式 + 连接信息展示
 
 ## v0.2.0 (2026-08-22)
 
-- Persistent debugger attachment
-- Bridge port input
-- Styled status page
-- 29/29 tests passing
+- 持久 debugger 附着
+- 桥接端口配置输入
+- 状态页美化
+- 29/29 单元测试通过
 
 ## v0.1.0 (2026-08-22)
 
-- Initial release
+- 首个发布版本

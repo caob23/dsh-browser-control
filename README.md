@@ -72,28 +72,47 @@ Chrome 扩展（CDP 驱动）
 
 工具栏出现鲸鱼图标 → 绿点呼吸 = 已连接。需要 Chrome 116+。
 
-## 安装 dsh 插件（1 分钟）
+## 安装 dsh 插件
 
-### 方式 A：一条命令（推荐，v1.0.3+）
+📦 本包是 bundle 包（package.json 中 `dsh.bundle.patch` 指向 `cordis.patch.yml`）。`dsh plugin` 安装成功后会自动把它加入 profile 的 `dsh.profile.bundles`，重启即加载。
 
-插件已按 dsh Profile Bundle 规范打包，`dsh plugin add` 直接装：
+前置：`dsh plugin` 转发给 pnpm，需要 pnpm 在 PATH 上；首次使用会自动初始化目标 profile。
+
+### 方式 A：从 npm 安装（推荐）
 
 ```bash
-# 从 GitHub 安装（无需 npm 账号）
-dsh plugin --profile web add github:caob23/dsh-browser-control#v1.0.3
-
-# 或发布 npm 后从 registry 安装
+# 通过 dsh plugin 从 npm registry 安装并自动注册到 profile
 dsh plugin --profile web add @caob23/dsh-browser-control
 ```
 
-然后 `dsh web` 重启该 Profile，dsh 设置 → 插件 → DSH 浏览器控制 → 开启即可。
+如果自行管理 profile 的 node_modules，也可以在对应目录中直接使用 npm 安装：
 
-> 从旧版「复制进 harness 源码树」方式迁移：先删掉 `packages/web/browser-bridge/`
-> 旧副本并还原 base bundle 的三处配置，否则 `browser-bridge` id 会重复挂载。
+```bash
+npm install @caob23/dsh-browser-control
+```
 
-Headless 等其他 Profile 同理，把 `--profile web` 换成对应名字。
+### 方式 B：从 GitHub 或本地目录安装
 
-### 方式 B：复制进 harness 源码树（旧方式，v1.0.2 及以前）
+```bash
+# 直接从 GitHub 安装
+dsh plugin --profile web add "github:caob23/dsh-browser-control#v1.0.3"
+
+# 本地目录调试（注意：必须显式 file: 前缀）
+dsh plugin --profile web add "file:D:\path\to\dsh-browser-control"
+```
+
+重启 DSH 后生效。卸载：
+
+```bash
+dsh plugin --profile web remove @caob23/dsh-browser-control
+```
+
+> ⚠️ 本地目录请用 `file:` 前缀。裸路径 / 相对路径会被 pnpm 当作 `link:` 协议，
+> 在 hoisted 布局下不会物化到 node_modules 顶层，导致启动时无法解析该包。
+
+安装并重启后：dsh 设置 → 插件 → DSH 浏览器控制 → 开启。
+
+### 方式 C：复制进 harness 源码树（旧方式，v1.0.2 及以前）
 
 ```bash
 git clone https://github.com/caob23/dsh-browser-control.git
@@ -102,9 +121,7 @@ git checkout v1.0.2   # 旧布局在 v1.0.2 tag
 ./install.sh /你的路径/deepseek-harness
 ```
 
-脚本只负责把插件文件复制到位，**完成后仍需手动改三处配置**（同方式 B 的第 2 步），改完重启 dsh 才会生效。
-
-### 方式 B：手动安装
+脚本只负责把插件文件复制到位，**完成后仍需手动改三处配置**，改完重启 dsh 才会生效：
 
 下载 [`dsh-browser-bridge-plugin-v1.0.2.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.2/dsh-browser-bridge-plugin-v1.0.2.zip)，解压到 deepseek-harness 的 `packages/web/browser-bridge/`。
 

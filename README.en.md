@@ -72,29 +72,48 @@ Download the zip → unzip to a fixed folder (don't delete it) → open `chrome:
 
 Whale icon in the toolbar = success. Requires Chrome 116+.
 
-## Install the dsh plugin (1 minute)
+## Install the dsh plugin
 
-### Option A: one-line install (recommended, v1.0.3+)
+📦 This package is a bundle (`package.json` points `dsh.bundle.patch` at `cordis.patch.yml`). A successful `dsh plugin add` registers it under the profile's `dsh.profile.bundles`; a restart loads it.
 
-The plugin ships as a dsh Profile Bundle, so `dsh plugin add` just works:
+Prerequisite: `dsh plugin` forwards to pnpm, so pnpm must be on PATH; the target profile is initialized automatically on first use.
+
+### Option A: install from npm (recommended)
 
 ```bash
-# Install from GitHub (no npm account needed)
-dsh plugin --profile web add github:caob23/dsh-browser-control#v1.0.3
-
-# Or from the npm registry once published
+# Install from the npm registry and register it with the profile
 dsh plugin --profile web add @caob23/dsh-browser-control
 ```
 
-Then `dsh web` to restart that Profile and toggle DSH Browser Control on under Settings → Plugins.
+If you manage the profile's node_modules yourself, plain npm works there too:
 
-> Migrating from the old "copy into the harness tree" layout: delete the old
-> `packages/web/browser-bridge/` copy and revert its three base-bundle config
-> edits first, otherwise the `browser-bridge` id mounts twice.
+```bash
+npm install @caob23/dsh-browser-control
+```
 
-Other profiles work the same way — swap `--profile web` for the profile name.
+### Option B: install from GitHub or a local directory
 
-### Option B: copy into the harness tree (legacy, v1.0.2 and earlier)
+```bash
+# Straight from GitHub
+dsh plugin --profile web add "github:caob23/dsh-browser-control#v1.0.3"
+
+# Local checkout for debugging (note: the explicit file: prefix is required)
+dsh plugin --profile web add "file:D:\path\to\dsh-browser-control"
+```
+
+Restart DSH to load it. Uninstall:
+
+```bash
+dsh plugin --profile web remove @caob23/dsh-browser-control
+```
+
+> ⚠️ Always use the `file:` prefix for local directories. Bare / relative paths
+> are treated as the `link:` protocol by pnpm, which does not materialize into
+> node_modules top-level under hoisted layouts and fails to resolve at boot.
+
+After installing and restarting: Settings → Plugins → DSH Browser Control → on.
+
+### Option C: copy into the harness tree (legacy, v1.0.2 and earlier)
 
 ```bash
 git clone https://github.com/caob23/dsh-browser-control.git
@@ -103,9 +122,7 @@ git checkout v1.0.2   # legacy layout lives at the v1.0.2 tag
 ./install.sh /path/to/deepseek-harness
 ```
 
-The script only copies plugin files into place — **you still need the three manual config edits** (same as Option B, step 2), then restart dsh.
-
-### Option B: manual install
+The script only copies plugin files into place — **you still need the three manual config edits**, then restart dsh:
 
 Download [`dsh-browser-bridge-plugin-v1.0.2.zip`](https://github.com/caob23/dsh-browser-control/releases/download/v1.0.2/dsh-browser-bridge-plugin-v1.0.2.zip) and unzip into `deepseek-harness/packages/web/browser-bridge/`.
 

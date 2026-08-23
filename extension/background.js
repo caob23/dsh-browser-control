@@ -238,14 +238,27 @@ function waitTabComplete(tabId, timeoutMs) {
 	});
 }
 
-/** Activate a tab and its window so it receives real keyboard focus. Input
- *  events dispatched to an unfocused tab go nowhere (document.hasFocus() is
- *  false and the page never sees the keys). A minimized window reports a
- *  0x0 viewport — every coordinate lands offscreen — so restore it first. */
+/** Bring the tab and its window forward so real input can land, WITHOUT
+ *  touching window geometry: `focused` only raises the window; tab activation
+ *  never moves or resizes anything. The user's window size/position/state
+ *  (maximized included) is never modified. A minimized window keeps its 0x0
+ *  viewport where real input cannot land — report that instead of
+ *  force-restoring it (state:'normal' would also un-maximize the window). */
 async function activateTabWindow(tabId) {
+	let win;
 	try {
 		const tab = await chrome.tabs.get(tabId);
-		await chrome.windows.update(tab.windowId, { focused: true, state: 'normal' });
+		win = await chrome.windows.get(tab.windowId);
+	} catch {
+		return; // tab or window is closing; the command reports it downstream
+	}
+	if (win.state === 'minimized') {
+		const err = new Error('browser window is minimized — real keyboard/mouse input cannot reach a 0x0 viewport; restore the window manually (automation never changes window size or position)');
+		err.code = 'window_minimized';
+		throw err;
+	}
+	try {
+		await chrome.windows.update(win.id, { focused: true });
 		await chrome.tabs.update(tabId, { active: true });
 	} catch { /* tab may be closing; input will fail downstream anyway */ }
 }

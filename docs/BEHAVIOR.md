@@ -2,6 +2,12 @@
 
 Agent 和上层脚本可以依赖的确定性语义。违反这些契约视为 bug。
 
+## 窗口几何不可侵犯
+
+- 自动化**绝不**修改窗口尺寸、位置或状态（最大化/还原/最小化一律不动）。真实输入所需的窗口聚焦（`focused: true`）与标签页激活不改变任何几何属性。
+- 浏览器窗口处于**最小化**状态时，视口为 0×0，真实键鼠事件无法送达。此时 `type` 模式 / `press` / `click` 返回结构化错误 `window_minimized`，提示用户手动还原窗口——绝不自动还原（自动还原会把最大化窗口压成小窗）。
+- `fill` 模式、`eval`、`content`、`wait` 不需要窗口前台，最小化下照常工作。
+
 ## 自动等待
 
 - `browser_navigate` / `tabs.open` 等待 `document.readyState === 'complete'`（上限 15s，`timeoutMs` 可调）后才返回。

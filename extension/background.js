@@ -35,6 +35,9 @@ let reconnectTimer = null;
 let heartbeatTimer = null;
 let helloInfo = null;
 let lastError = null;
+/** True after the user clicks 断开连接 in the popup; blocks auto-reconnect
+ *  until they click 立即连接 again. Reset on browser restart. */
+let manualDisconnect = false;
 
 /** Tab ids we hold a persistent debugger attachment on. Detach only on
  *  explicit disconnect, tab close, or DevTools stealing the tab. */
@@ -86,7 +89,7 @@ function send(obj) {
 }
 
 function scheduleReconnect() {
-	if (!cfg.autoConnect) return;
+	if (manualDisconnect || !cfg.autoConnect) return;
 	const delay = Math.min(MAX_BACKOFF_MS, 1000 * 2 ** backoffAttempt);
 	backoffAttempt += 1;
 	clearTimeout(reconnectTimer);
@@ -96,7 +99,7 @@ function scheduleReconnect() {
 function connect() {
 	if (wsState === 'open' || wsState === 'connecting') return;
 	clearTimeout(reconnectTimer);
-	if (!cfg.autoConnect) return;
+	if (manualDisconnect || !cfg.autoConnect) return;
 
 	let url;
 	try {
@@ -588,9 +591,17 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 		return false;
 	}
 	if (msg?.type === 'reconnect') {
+		manualDisconnect = false;
+		backoffAttempt = 0;
 		disconnectNow();
 		loadConfig().then(() => { connect(); sendResponse({ started: true }); });
 		return true;
+	}
+	if (msg?.type === 'disconnect') {
+		manualDisconnect = true;
+		disconnectNow();
+		sendResponse({ started: true });
+		return false;
 	}
 	return false;
 });

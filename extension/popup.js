@@ -24,7 +24,11 @@ function render(status) {
 	if (document.activeElement !== $('port')) $('port').value = status.cfg.port ?? 9777;
 	if (document.activeElement !== $('token')) $('token').value = status.cfg.token;
 	$('auto').checked = Boolean(status.cfg.autoConnect);
-	$('reconnect').textContent = status.state === 'open' ? '断开重连' : '立即连接';
+	const connected = status.state === 'open';
+	const btn = $('reconnect');
+	btn.textContent = connected ? '断开连接' : (status.state === 'connecting' ? '连接中…' : '立即连接');
+	btn.classList.toggle('danger', connected);
+	btn.dataset.connected = String(connected);
 	const errorBox = $('error');
 	errorBox.textContent = status.lastError ?? '';
 	errorBox.className = errorBox.textContent.length > 0 ? 'error show' : 'error';
@@ -41,7 +45,8 @@ async function refresh() {
 }
 
 $('reconnect').addEventListener('click', async () => {
-	await chrome.runtime.sendMessage({ type: 'reconnect' });
+	const connected = $('reconnect').dataset.connected === 'true';
+	await chrome.runtime.sendMessage({ type: connected ? 'disconnect' : 'reconnect' });
 	setTimeout(refresh, 600);
 });
 

@@ -5,15 +5,11 @@
 </p>
 
 <p align="center">
-  <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
-</p>
-
-<p align="center">
   <a href="README.md">简体中文</a> · <a href="README.en.md">English</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/caob23/dsh-browser-control/releases"><img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="version"></a>
+  <a href="https://github.com/caob23/dsh-browser-control/releases"><img src="https://img.shields.io/badge/version-1.0.1-blue?style=flat-square" alt="version"></a>
   <a href="https://github.com/caob23/dsh-browser-control/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="license"></a>
   <a href="https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"><img src="https://img.shields.io/badge/Chrome-MV3-yellow?style=flat-square" alt="chrome mv3"></a>
   <a href="https://github.com/topics/dsh-plugin"><img src="https://img.shields.io/badge/DSH-Plugin-purple?style=flat-square" alt="dsh plugin"></a>
@@ -23,6 +19,10 @@
 </p>
 
 A Chrome extension + DeepSeek Harness plugin that lets AI agents drive your real browser like a human.
+
+<p align="center">
+  <img src="assets/banner.png" width="480" alt="DSH Browser Control — a whale searching Google with a mouse">
+</p>
 
 ## What is this
 

@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://github.com/caob23/dsh-browser-control/releases"><img src="https://img.shields.io/github/v/release/caob23/dsh-browser-control" alt="release"></a>
   <a href="https://github.com/caob23/dsh-browser-control/blob/main/LICENSE"><img src="https://img.shields.io/github/license/caob23/dsh-browser-control" alt="license"></a>
+  <a href="https://awesome-dsh-plugin.com"><img src="https://awesome-dsh-plugin.com/badge.svg" alt="Awesome DSH Plugin"></a>
   <a href="https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline"><img src="https://img.shields.io/badge/Chrome-MV3-yellow" alt="chrome mv3"></a>
   <a href="https://github.com/topics/dsh-plugin"><img src="https://img.shields.io/badge/DSH-Plugin-purple" alt="dsh plugin"></a>
   <img src="https://img.shields.io/badge/CDP-powered-orange" alt="cdp">

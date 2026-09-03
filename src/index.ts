@@ -2,7 +2,13 @@
  * Browser-bridge plugin: one local WebSocket endpoint the DSH Browser Control
  * extension connects to, plus the model-facing `browser_*` tools that drive
  * it. The Settings-managed `enabled` flag starts and stops the listener live
- * through {@link installSettingsSection}'s change hook — no reload needed.
+ * through dsh-settings' change hook — no reload needed.
+ *
+ * We deliberately bypass the higher-level `installSettingsSection` helper and
+ * talk to the lower-level `sctx.settings.register` API directly: that API
+ * predates the helper and is the one stable across every dsh-settings build a
+ * consumer is realistically pinned to. Importing the helper on a build that
+ * does not export it crashes the whole plugin at module load.
  *
  * Tools stay mounted whenever the plugin does; calling one while the bridge
  * is disabled or the extension is offline fails with a message naming the
@@ -12,11 +18,11 @@
 
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { Context } from '@deepseek-ai/cordis'
+import { FiberState, type Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import type { JsonValue } from '@deepseek-ai/dsh-tools'
-import { installSettingsSection, settingsNamespace } from '@deepseek-ai/dsh-settings'
+import type { SettingsScope } from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-invariants'
 import { BridgeServer, cleanupArtifacts } from './server.ts'
 
@@ -27,7 +33,7 @@ export const name = 'browser-bridge'
 export const inject = ['tools', 'systemPrompt']
 
 /** Settings namespace carrying the bridge switch and endpoint options. */
-export const BROWSER_BRIDGE_SETTINGS_NAMESPACE = settingsNamespace('browser-bridge')
+export const BROWSER_BRIDGE_SETTINGS_NAMESPACE = 'browser-bridge'
 
 export interface Config {
 	/**
@@ -606,18 +612,42 @@ export function apply(ctx: Context, config: Config): void {
 	const controller = new BridgeController(line => ctx.logger.info(line))
 
 	let current: () => ResolvedConfig = () => resolved
-	installSettingsSection(ctx, BROWSER_BRIDGE_SETTINGS_NAMESPACE, Config, config, {
-		setSource: (source) => {
-			current = source as () => ResolvedConfig
-		},
-		onChange: () => {
+	// Equivalent of @deepseek-ai/dsh-settings' `installSettingsSection`, inlined so
+	// the plugin still loads on dsh-settings builds that predate the helper. The
+	// underlying `sctx.settings.register` API is the one stable across every
+	// dsh-settings version a consumer is realistically pinned to.
+	ctx.inject(['settings'], (sctx) => {
+		const scope = (sctx.settings.register as (
+			ns: string,
+			schema: typeof Config,
+			options: { base: Config; validate?: (value: Config) => void },
+		) => SettingsScope<Config>)(
+			BROWSER_BRIDGE_SETTINGS_NAMESPACE,
+			Config,
+			{
+				base: config,
+				validate: (value) => {
+					if (value.enabled && (value.token ?? '').trim().length === 0) {
+						throw new Error('browser-bridge: token must be a non-empty string when enabled')
+					}
+				},
+			},
+		)
+		current = () => scope.get() as ResolvedConfig
+		ctx.effect(() => () => {
+			// Mirror `isUnloading` from dsh-settings (private): the fiber's own
+			// unload path runs the disposer too, and there re-applying the
+			// composition entry and firing `onChange` would re-register routes
+			// against a fiber whose resources are being released.
+			if (ctx.fiber.state === FiberState.DISPOSED || ctx.fiber.state === FiberState.UNLOADING) return
+			current = () => resolved
 			void controller.reconcile(current())
-		},
-		validate: (value) => {
-			if (value.enabled && (value.token ?? '').trim().length === 0) {
-				throw new Error('browser-bridge: token must be a non-empty string when enabled')
-			}
-		},
+		}, 'browser-bridge: settings cleanup')
+		void controller.reconcile(current())
+		scope.watch(() => {
+			if (ctx.fiber.state === FiberState.DISPOSED || ctx.fiber.state === FiberState.UNLOADING) return
+			void controller.reconcile(current())
+		})
 	})
 
 	// Activation converges loudly so a bad port fails the plugin at load;

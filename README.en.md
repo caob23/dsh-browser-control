@@ -112,7 +112,9 @@ dsh plugin --profile web remove @caob23/dsh-browser-control
 > are treated as the `link:` protocol by pnpm, which does not materialize into
 > node_modules top-level under hoisted layouts and fails to resolve at boot.
 
-After installing and restarting: Settings → Plugins → DSH Browser Control → on.
+After installing and restarting, the bridge is on by default (v1.0.6+); no manual enable step. The status page at http://127.0.0.1:9777/ confirms the listener is up.
+
+> To opt out: set `enabled: false` under `browser-bridge.config` in `~/.dsh/settings.yml`.
 
 ### Option C: copy into the harness tree (legacy, v1.0.2 and earlier)
 

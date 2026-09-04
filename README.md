@@ -111,7 +111,9 @@ dsh plugin --profile web remove @caob23/dsh-browser-control
 > ⚠️ 本地目录请用 `file:` 前缀。裸路径 / 相对路径会被 pnpm 当作 `link:` 协议，
 > 在 hoisted 布局下不会物化到 node_modules 顶层，导致启动时无法解析该包。
 
-安装并重启后：dsh 设置 → 插件 → DSH 浏览器控制 → 开启。
+安装并重启后，桥接默认开启（v1.0.6+），不需要再去设置里手动启用。状态页 http://127.0.0.1:9777/ 可看到服务已监听。
+
+> 想关掉默认开启：在 `~/.dsh/settings.yml` 的 `browser-bridge.config` 下写 `enabled: false` 即可。
 
 ### 方式 C：复制进 harness 源码树（旧方式，v1.0.2 及以前）
 

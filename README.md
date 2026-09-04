@@ -175,6 +175,10 @@ git checkout v1.0.2   # 旧布局在 v1.0.2 tag
 | `browser_tabs` | 标签页管理（列表/新建/关闭/切换） |
 | `browser_evaluate` | 执行任意 JS |
 | `browser_screenshot` | 截取页面截图 |
+| `browser_console_log` | 抓取页面 console 日志（v1.0.7+） |
+| `browser_network_log` | 抓取 HTTP 请求/响应（v1.0.7+） |
+| `browser_pdf` | 当前页导出 PDF（v1.0.7+） |
+| `browser_emulate` | 切设备视口（移动 / 桌面 / 自定义，v1.0.7+） |
 | `browser_cleanup` | 清理临时文件 |
 
 ## 架构

@@ -9,6 +9,10 @@
  * Wire protocol (text frames, one JSON object each):
  * - extension → server: `{type:'hello',…}`, `{type:'pong',t}`, `{type:'result',id,ok,result?|error}`
  * - server → extension: `{type:'ping',t}`, `{type:'command',id,command,params}`
+ *
+ * Command names (sent in `command`) include: `ping`, `browser.info`, `tabs.list/open/close/activate`,
+ * `nav`, `eval`, `content`, `find`, `click`, `input`, `press`, `scroll`, `snapshot`, `screenshot`,
+ * `wait`, `dialog`, `console.log`, `network.log`, `network.clear`, `pdf`, `emulate`.
  * @module @deepseek-ai/dsh-browser-bridge/server
  */
 

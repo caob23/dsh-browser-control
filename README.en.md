@@ -176,6 +176,10 @@ Visit `http://127.0.0.1:9777/` for connection status.
 | `browser_tabs` | Tab management (list/open/close/activate) |
 | `browser_evaluate` | Run arbitrary JS |
 | `browser_screenshot` | Capture page screenshot |
+| `browser_console_log` | Captured page console entries (v1.0.7+) |
+| `browser_network_log` | Captured HTTP request/response log (v1.0.7+) |
+| `browser_pdf` | Export the current page as PDF (v1.0.7+) |
+| `browser_emulate` | Switch to a device viewport (mobile / desktop / custom, v1.0.7+) |
 | `browser_cleanup` | Clean up temp files |
 
 ## Architecture

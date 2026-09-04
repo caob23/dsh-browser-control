@@ -236,6 +236,37 @@ async function saveScreenshot(controller: BridgeController, payload: ScreenshotP
 		file,
 		bytes: buffer.length,
 		tabId: payload.tabId,
+		title: payload.tabTitle,
+		url: payload.tabUrl,
+	}
+}
+
+/** Write one PDF payload to `path` (absolute or relative to `controller.shotsDir`)
+ *  and return the absolute path + size. Mirrors saveScreenshot's contract. */
+async function savePdf(
+	controller: BridgeController,
+	payload: { base64: string; tabId: number; tabTitle?: string; tabUrl?: string },
+	requestedPath?: string,
+): Promise<{ file: string; bytes: number; tabId: number; title?: string; url?: string }> {
+	const dir = controller.shotsDir
+	if (dir === undefined) throw new Error('browser-bridge is not configured yet')
+	let file: string
+	if (requestedPath && path.isAbsolute(requestedPath)) {
+		file = requestedPath
+		await mkdir(path.dirname(file), { recursive: true })
+	} else {
+		await mkdir(dir, { recursive: true })
+		const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+		const random = Math.random().toString(36).slice(2, 6)
+		const name = requestedPath ? path.basename(requestedPath) : `${stamp}-${random}.pdf`
+		file = path.join(dir, name)
+	}
+	const buffer = Buffer.from(payload.base64, 'base64')
+	await writeFile(file, buffer)
+	return {
+		file,
+		bytes: buffer.length,
+		tabId: payload.tabId,
 		...(payload.tabTitle === undefined ? {} : { title: payload.tabTitle }),
 		...(payload.tabUrl === undefined ? {} : { url: payload.tabUrl }),
 	}
@@ -600,6 +631,207 @@ function applyBrowserTools(ctx: Context, controller: BridgeController): void {
 		async execute() {
 			const result = await controller.cleanup()
 			return { shotsRemoved: result.shotsRemoved, scratchRemoved: Array.from(result.scratchRemoved) }
+		},
+	}))
+
+	// v1.0.7: console + network capture, PDF export, device emulation.
+
+	ctx.tools.register(defineTool({
+		name: 'browser_console_log',
+		description: 'Read the captured `console.log/info/warn/error` entries for a tab. Set `clear:true` to also empty the buffer so the next call shows only entries recorded after this one. Useful for "what did the page log after I clicked submit".',
+		parameters: {
+			tabId: { type: 'number', description: 'Target tab; defaults to the active tab.' },
+			levels: { type: 'array', items: { type: 'string' }, description: 'Filter to one or more of: log, info, warn, error, debug.' },
+			pattern: { type: 'string', description: 'Regex (case-insensitive) matched against the formatted text.' },
+			limit: { type: 'number', description: 'Maximum entries to return; default 100, capped at 500.' },
+			clear: { type: 'boolean', description: 'Empty the buffer after reading.' },
+		},
+		output: {
+			schema: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					tabId: { type: 'number', required: true },
+					count: { type: 'number', required: true },
+					total: { type: 'number', required: true },
+					entries: { type: 'array', required: true, items: { type: 'object', additionalProperties: false, properties: {} } },
+				},
+			},
+			render: (_args, value) => [{
+				type: 'text',
+				text: `Tab ${value.tabId}: ${value.count} of ${value.total} console entries`,
+			}],
+		},
+		presentCall: () => ({ card: 'generic', title: 'Read browser console', kind: 'other' as const }),
+		async execute(args, exec) {
+			const params: Record<string, unknown> = {}
+			if (args.tabId !== undefined) params.tabId = args.tabId
+			if (Array.isArray(args.levels)) params.levels = args.levels
+			if (typeof args.pattern === 'string') params.pattern = args.pattern
+			if (typeof args.limit === 'number') params.limit = args.limit
+			if (args.clear === true) params.clear = true
+			return await controller.execute('console.log', params, exec.signal) as { tabId: number; count: number; total: number; entries: Array<Record<string, unknown>> }
+		},
+	}))
+
+	ctx.tools.register(defineTool({
+		name: 'browser_network_log',
+		description: 'Read captured HTTP request/response pairs for a tab. `includeStatic:true` adds images / fonts / stylesheets / scripts (filtered by default — they dominate the buffer). `methodPattern` / `urlPattern` / `status` filter server-side results; `clear:true` empties the buffer.',
+		parameters: {
+			tabId: { type: 'number', description: 'Target tab; defaults to the active tab.' },
+			includeStatic: { type: 'boolean', description: 'Include images / fonts / stylesheets / scripts. Default false.' },
+			methodPattern: { type: 'string', description: 'Regex (case-insensitive) matched against the HTTP method.' },
+			urlPattern: { type: 'string', description: 'Regex (case-insensitive) matched against the URL.' },
+			status: { type: 'string', description: 'One of: 2xx, 3xx, 4xx, 5xx, failed, pending.' },
+			limit: { type: 'number', description: 'Maximum entries to return; default 200, capped at 1000.' },
+			clear: { type: 'boolean', description: 'Empty the buffer after reading.' },
+		},
+		output: {
+			schema: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					tabId: { type: 'number', required: true },
+					count: { type: 'number', required: true },
+					total: { type: 'number', required: true },
+					requests: { type: 'array', required: true, items: { type: 'object', additionalProperties: false, properties: {} } },
+				},
+			},
+			render: (_args, value) => [{
+				type: 'text',
+				text: `Tab ${value.tabId}: ${value.count} of ${value.total} network requests`,
+			}],
+		},
+		presentCall: () => ({ card: 'generic', title: 'Read browser network log', kind: 'other' as const }),
+		async execute(args, exec) {
+			const params: Record<string, unknown> = {}
+			if (args.tabId !== undefined) params.tabId = args.tabId
+			if (args.includeStatic === true) params.includeStatic = true
+			if (typeof args.methodPattern === 'string') params.methodPattern = args.methodPattern
+			if (typeof args.urlPattern === 'string') params.urlPattern = args.urlPattern
+			if (typeof args.status === 'string') params.status = args.status
+			if (typeof args.limit === 'number') params.limit = args.limit
+			if (args.clear === true) params.clear = true
+			return await controller.execute('network.log', params, exec.signal) as { tabId: number; count: number; total: number; requests: Array<Record<string, unknown>> }
+		},
+	}))
+
+	ctx.tools.register(defineTool({
+		name: 'browser_network_clear',
+		description: 'Empty the per-tab network capture buffer without returning the rows.',
+		parameters: {
+			tabId: { type: 'number', description: 'Target tab; defaults to the active tab.' },
+		},
+		output: {
+			schema: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					tabId: { type: 'number', required: true },
+					cleared: { type: 'boolean', required: true },
+				},
+			},
+			render: (_args, value) => [{ type: 'text', text: `Tab ${value.tabId}: network log cleared` }],
+		},
+		presentCall: () => ({ card: 'generic', title: 'Clear browser network log', kind: 'other' as const }),
+		async execute(args, exec) {
+			const params: Record<string, unknown> = {}
+			if (args.tabId !== undefined) params.tabId = args.tabId
+			return await controller.execute('network.clear', params, exec.signal) as { tabId: number; cleared: boolean }
+		},
+	}))
+
+	ctx.tools.register(defineTool({
+		name: 'browser_pdf',
+		description: 'Export the current page to a PDF. `path` may be absolute (saved there) or omitted (saved under the configured shotsDir). Returns the absolute path + size; the PDF preserves text (selectable, searchable) and print-media CSS.',
+		parameters: {
+			tabId: { type: 'number', description: 'Target tab; defaults to the active tab.' },
+			path: { type: 'string', description: 'Absolute path. Omit to save under the configured shotsDir with a timestamped name.' },
+			landscape: { type: 'boolean', description: 'Use landscape orientation.' },
+			printBackground: { type: 'boolean', description: 'Render CSS backgrounds. Default true.' },
+			paperWidth: { type: 'number', description: 'Paper width in inches.' },
+			paperHeight: { type: 'number', description: 'Paper height in inches.' },
+			scale: { type: 'number', description: 'Page scale (0.1–2.0).' },
+			pageRanges: { type: 'string', description: 'Sub-range, e.g. "1-3" or "1,4-6".' },
+		},
+		output: {
+			schema: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					file: { type: 'string', required: true },
+					bytes: { type: 'number', required: true },
+					tabId: { type: 'number', required: true },
+				},
+			},
+			render: (_args, value) => [{
+				type: 'text',
+				text: `PDF written to ${value.file} (${(value.bytes / 1024).toFixed(1)} KB)`,
+			}],
+		},
+		presentCall: args => ({ card: 'generic', title: `Save PDF${args.path ? ' → ' + args.path : ''}`, kind: 'other' as const }),
+		async execute(args, exec) {
+			const params: Record<string, unknown> = {}
+			if (args.tabId !== undefined) params.tabId = args.tabId
+			if (args.landscape === true) params.landscape = true
+			if (args.printBackground === false) params.printBackground = false
+			if (typeof args.paperWidth === 'number') params.paperWidth = args.paperWidth
+			if (typeof args.paperHeight === 'number') params.paperHeight = args.paperHeight
+			if (typeof args.scale === 'number') params.scale = args.scale
+			if (typeof args.pageRanges === 'string') params.pageRanges = args.pageRanges
+			const payload = await controller.execute('pdf', params, exec.signal) as { base64: string; tabId: number }
+			return await savePdf(controller, payload, typeof args.path === 'string' ? args.path : undefined)
+		},
+	}))
+
+	ctx.tools.register(defineTool({
+		name: 'browser_emulate',
+		description: 'Switch the tab into a device viewport (mobile / tablet / desktop) for responsive-UI testing. `device:"reset"` restores the user\'s actual viewport. Custom `width`/`height`/`deviceScaleFactor`/`isMobile`/`hasTouch` override any preset field.',
+		parameters: {
+			tabId: { type: 'number', description: 'Target tab; defaults to the active tab.' },
+			device: { type: 'string', description: 'Preset: desktop | mobile-iphone-13 | mobile-pixel-7 | tablet-ipad | reset. Or pass custom width/height below.' },
+			width: { type: 'number', description: 'Custom viewport width in CSS px.' },
+			height: { type: 'number', description: 'Custom viewport height in CSS px.' },
+			deviceScaleFactor: { type: 'number', description: 'Custom DPR (1 = standard, 2 = retina, 3 = super-retina).' },
+			isMobile: { type: 'boolean', description: 'Pass as mobile to the page (affects responsive meta).' },
+			hasTouch: { type: 'boolean', description: 'Enable touch event dispatch.' },
+			userAgent: { type: 'string', description: 'Custom User-Agent string. Empty string clears.' },
+		},
+		output: {
+			schema: {
+				type: 'object',
+				additionalProperties: false,
+				properties: {
+					tabId: { type: 'number', required: true },
+					reset: { type: 'boolean' },
+					width: { type: 'number' },
+					height: { type: 'number' },
+					deviceScaleFactor: { type: 'number' },
+					isMobile: { type: 'boolean' },
+					hasTouch: { type: 'boolean' },
+					userAgent: { type: 'string' },
+				},
+			},
+			render: (_args, value) => {
+				if (value.reset) return [{ type: 'text', text: `Tab ${value.tabId}: emulation reset to default` }]
+				return [{
+					type: 'text',
+					text: `Tab ${value.tabId}: ${value.width || '?'}×${value.height || '?'} DPR=${value.deviceScaleFactor ?? '?'} mobile=${value.isMobile ?? false} touch=${value.hasTouch ?? false}`,
+				}]
+			},
+		},
+		presentCall: args => ({ card: 'generic', title: `Emulate${args.device ? ' ' + args.device : ' device'}`, kind: 'other' as const }),
+		async execute(args, exec) {
+			const params: Record<string, unknown> = {}
+			if (args.tabId !== undefined) params.tabId = args.tabId
+			if (typeof args.device === 'string') params.device = args.device
+			if (typeof args.width === 'number') params.width = args.width
+			if (typeof args.height === 'number') params.height = args.height
+			if (typeof args.deviceScaleFactor === 'number') params.deviceScaleFactor = args.deviceScaleFactor
+			if (typeof args.isMobile === 'boolean') params.isMobile = args.isMobile
+			if (typeof args.hasTouch === 'boolean') params.hasTouch = args.hasTouch
+			if (typeof args.userAgent === 'string') params.userAgent = args.userAgent
+			return await controller.execute('emulate', params, exec.signal) as { tabId: number; reset?: boolean; width?: number; height?: number; deviceScaleFactor?: number; isMobile?: boolean; hasTouch?: boolean; userAgent?: string }
 		},
 	}))
 }

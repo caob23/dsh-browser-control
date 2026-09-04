@@ -43,6 +43,19 @@ let manualDisconnect = false;
  *  explicit disconnect, tab close, or DevTools stealing the tab. */
 const attachedTabs = new Set();
 
+/** Per-tab ring buffer of CDP `Runtime.consoleAPICalled` entries since attach.
+ *  Map<tabId, Array<entry>>. Entries are capped at 500 per tab; older entries
+ *  shift off. A new attach bumps the tab's generation so stale entries queued
+ *  before re-attach are not surfaced as if they were current. */
+const consoleLog = new Map();
+/** Bumped on every re-attach so entries recorded against an old generation are
+ *  dropped. Map<tabId, number>. */
+const tabBufferGenerations = new Map();
+/** Per-tab in-flight network entries keyed by `Network.requestId`; merged
+ *  across `requestWillBeSent` / `responseReceived` / `loadingFinished` /
+ *  `loadingFailed`. Map<tabId, Map<requestId, entry>>. */
+const networkLog = new Map();
+
 /**
  * Native dialog (alert/confirm/prompt) auto-answer policy. 'accept' answers
  * every dialog as OK (prompt uses defaultText), 'dismiss' cancels, 'manual'
@@ -284,33 +297,123 @@ async function ensureAttached(tabId) {
 			reject(new Error(`debugger attach failed: ${err.message} (DevTools 打开着这个页面? 先关掉)`));
 		});
 	});
-	// Enable the domains whose events we consume (dialogs, navigation results).
+	// Enable the domains whose events we consume (dialogs, navigation results,
+	// console + network capture for the browser_console_log / browser_network_log tools).
 	await dbgSend(tabId, 'Page.enable').catch(() => {});
+	await dbgSend(tabId, 'Runtime.enable').catch(() => {});
+	await dbgSend(tabId, 'Network.enable').catch(() => {});
+	// Bump the per-attached-tab generation so in-flight network entries queued
+	// against an old attachment are not surfaced as if they were current.
+	tabBufferGenerations.set(tabId, (tabBufferGenerations.get(tabId) ?? 0) + 1);
 }
 
 /* Native dialog auto-answer: fires whenever the page opens alert/confirm/
  * prompt/beforeunload while a debugger is attached. Without an answer the
  * page's main thread stays blocked forever. */
 chrome.debugger.onEvent.addListener((source, method, params) => {
-	if (method !== 'Page.javascriptDialogOpening' || source?.tabId === undefined) return;
-	const tabId = source.tabId;
-	const entry = {
-		tabId, type: params.type, message: params.message,
-		defaultPrompt: params.defaultPrompt, answeredAs: dialogPolicy, t: Date.now(),
-	};
-	dialogLog.push(entry);
-	if (dialogLog.length > 50) dialogLog.shift();
-	if (dialogPolicy === 'manual') return;
-	chrome.debugger.sendCommand(
-		{ tabId },
-		'Page.handleJavaScriptDialog',
-		{ accept: dialogPolicy === 'accept', promptText: params.defaultPrompt },
-		() => void chrome.runtime.lastError,
-	);
+	const tabId = source?.tabId;
+	if (tabId === undefined) return;
+	if (method === 'Page.javascriptDialogOpening') {
+		const entry = {
+			tabId, type: params.type, message: params.message,
+			defaultPrompt: params.defaultPrompt, answeredAs: dialogPolicy, t: Date.now(),
+		};
+		dialogLog.push(entry);
+		if (dialogLog.length > 50) dialogLog.shift();
+		if (dialogPolicy === 'manual') return;
+		chrome.debugger.sendCommand(
+			{ tabId },
+			'Page.handleJavaScriptDialog',
+			{ accept: dialogPolicy === 'accept', promptText: params.defaultPrompt },
+			() => void chrome.runtime.lastError,
+		);
+		return;
+	}
+	if (method === 'Runtime.consoleAPICalled') {
+		// Skip the noisy "log-type:verbose / "time-start" pseudo entries.
+		const level = (params.type || 'log').toLowerCase();
+		if (level === 'verbose' || level === 'timeStart' || level === 'timeEnd') return;
+		const text = (params.args || []).map(arg => arg.value !== undefined ? String(arg.value) : (arg.description || arg.type || '')).join(' ');
+		let location;
+		if (params.stackTrace && params.stackTrace.callFrames && params.stackTrace.callFrames[0]) {
+			const f = params.stackTrace.callFrames[0];
+			location = `${f.url || '<inline>'}:${f.lineNumber}`;
+		}
+		const entry = { tabId, level, text, t: params.timestamp ? Math.round(params.timestamp * 1000) : Date.now() };
+		if (location) entry.location = location;
+		const buf = consoleLog.get(tabId) || [];
+		buf.push(entry);
+		if (buf.length > 500) buf.shift();
+		consoleLog.set(tabId, buf);
+		return;
+	}
+	if (method === 'Network.requestWillBeSent') {
+		// requestId from CDP; one per request. Key under the tab; the body is
+		// capped at 64KB to keep the buffer from blowing up on large POSTs.
+		const POST_LIMIT = 64 * 1024;
+		const post = params.request.postData;
+		const entry = {
+			tabId,
+			requestId: params.requestId,
+			method: params.request.method,
+			url: params.request.url,
+			headers: params.request.headers,
+			resourceType: params.type,
+			postData: typeof post === 'string' && post.length > POST_LIMIT ? post.slice(0, POST_LIMIT) + '…(truncated)' : post,
+			initiator: params.initiator && params.initiator.url,
+			wallTime: params.wallTime,
+		};
+		let tabMap = networkLog.get(tabId);
+		if (!tabMap) { tabMap = new Map(); networkLog.set(tabId, tabMap); }
+		tabMap.set(params.requestId, entry);
+		trimNetworkMap(tabMap);
+		return;
+	}
+	if (method === 'Network.responseReceived') {
+		const tabMap = networkLog.get(tabId);
+		if (!tabMap) return;
+		const entry = tabMap.get(params.requestId);
+		if (!entry) return;
+		entry.status = params.response.status;
+		entry.statusText = params.response.statusText;
+		entry.mimeType = params.response.mimeType;
+		entry.responseHeaders = params.response.headers;
+		return;
+	}
+	if (method === 'Network.loadingFinished') {
+		const tabMap = networkLog.get(tabId);
+		if (!tabMap) return;
+		const entry = tabMap.get(params.requestId);
+		if (!entry) return;
+		entry.encodedDataLength = params.encodedDataLength;
+		entry.finished = true;
+		return;
+	}
+	if (method === 'Network.loadingFailed') {
+		const tabMap = networkLog.get(tabId);
+		if (!tabMap) return;
+		const entry = tabMap.get(params.requestId);
+		if (!entry) return;
+		entry.failed = true;
+		entry.errorText = params.errorText;
+		entry.canceled = params.canceled;
+		return;
+	}
 });
+
+/** Cap a per-tab request map at 500 entries (LRU-by-insertion-order). */
+function trimNetworkMap(tabMap) {
+	if (tabMap.size <= 500) return;
+	const overflow = tabMap.size - 500;
+	const keys = tabMap.keys();
+	for (let i = 0; i < overflow; i++) tabMap.delete(keys.next().value);
+}
 
 function detachTab(tabId) {
 	attachedTabs.delete(tabId);
+	consoleLog.delete(tabId);
+	networkLog.delete(tabId);
+	tabBufferGenerations.delete(tabId);
 	chrome.debugger.detach({ tabId }, () => void chrome.runtime.lastError);
 }
 
@@ -321,6 +424,9 @@ function detachAll() {
 /* Clean up when a tab is closed (detaches automatically, but remove from set). */
 chrome.tabs.onRemoved.addListener((tabId) => {
 	if (attachedTabs.has(tabId)) attachedTabs.delete(tabId);
+	consoleLog.delete(tabId);
+	networkLog.delete(tabId);
+	tabBufferGenerations.delete(tabId);
 });
 
 /* Clean up when DevTools steals a tab (detach event fires). */
@@ -351,6 +457,158 @@ async function withCDP(tabId, fn) {
 async function cmdPing() {
 	return { pong: true, t: Date.now(), version: EXT_VERSION };
 }
+
+/**
+ * Return the recorded `Runtime.consoleAPICalled` entries for a tab. Filters
+ * apply client-side so the model only sees the rows it asked for. `clear`
+ * empties the buffer on the same call so the next call starts fresh; useful
+ * for "give me the warnings that appeared after I clicked submit" without
+ * earlier noise. `limit` defaults to 100, capped at 500.
+ */
+async function cmdConsoleLog(params) {
+	const tab = await resolveTab(params.tabId);
+	const limit = Math.min(500, Math.max(1, Number(params.limit) || 100));
+	const levels = Array.isArray(params.levels) && params.levels.length > 0
+		? new Set(params.levels.map((l) => String(l).toLowerCase()))
+		: null;
+	const pattern = typeof params.pattern === 'string' && params.pattern.length > 0
+		? new RegExp(params.pattern, 'i')
+		: null;
+	const buf = consoleLog.get(tab.id) || [];
+	const filtered = buf.filter((e) => {
+		if (levels && !levels.has(e.level)) return false;
+		if (pattern && !pattern.test(e.text || '')) return false;
+		return true;
+	});
+	const tail = filtered.slice(-limit);
+	if (params.clear === true) consoleLog.set(tab.id, []);
+	return { tabId: tab.id, count: tail.length, total: filtered.length, entries: tail };
+}
+
+/**
+ * Return merged request/response entries captured by `Network.*` events.
+ * `includeStatic: true` surfaces images / fonts / stylesheets / scripts that
+ * are filtered by default (they dominate the buffer in a typical page load).
+ * `methodPattern` / `urlPattern` / `status` filter client-side.
+ */
+async function cmdNetworkLog(params) {
+	const tab = await resolveTab(params.tabId);
+	const tabMap = networkLog.get(tab.id);
+	const all = tabMap ? [...tabMap.values()] : [];
+	const includeStatic = params.includeStatic === true;
+	const methodPattern = typeof params.methodPattern === 'string' && params.methodPattern.length > 0
+		? new RegExp(params.methodPattern, 'i')
+		: null;
+	const urlPattern = typeof params.urlPattern === 'string' && params.urlPattern.length > 0
+		? new RegExp(params.urlPattern, 'i')
+		: null;
+	const statusFilter = typeof params.status === 'string' && params.status.length > 0 ? params.status : null;
+	const staticTypes = new Set(['Image', 'Font', 'Stylesheet', 'Script', 'Favicon', 'Manifest']);
+	const filtered = all.filter((e) => {
+		if (!includeStatic && staticTypes.has(e.resourceType)) return false;
+		if (methodPattern && !methodPattern.test(e.method || '')) return false;
+		if (urlPattern && !urlPattern.test(e.url || '')) return false;
+		if (statusFilter) {
+			if (e.failed) {
+				if (!/^f/i.test(statusFilter)) return false;
+			} else if (e.status === undefined) {
+				if (!/^p/i.test(statusFilter)) return false; // pending
+			} else if (statusFilter === '2xx' && (e.status < 200 || e.status >= 300)) return false;
+			else if (statusFilter === '3xx' && (e.status < 300 || e.status >= 400)) return false;
+			else if (statusFilter === '4xx' && (e.status < 400 || e.status >= 500)) return false;
+			else if (statusFilter === '5xx' && (e.status < 500 || e.status >= 600)) return false;
+		}
+		return true;
+	});
+	filtered.sort((a, b) => (a.wallTime || 0) - (b.wallTime || 0));
+	const limit = Math.min(1000, Math.max(1, Number(params.limit) || 200));
+	const out = filtered.slice(-limit).map((e) => {
+		const { requestId: _id, tabId: _t, ...rest } = e;
+		return rest;
+	});
+	if (params.clear === true) networkLog.set(tab.id, new Map());
+	return { tabId: tab.id, count: out.length, total: filtered.length, requests: out };
+}
+
+async function cmdNetworkClear(params) {
+	const tab = await resolveTab(params.tabId);
+	networkLog.set(tab.id, new Map());
+	return { tabId: tab.id, cleared: true };
+}
+
+/**
+ * `Page.printToPDF` returns base64-encoded PDF. The extension's MV3 SW cannot
+ * write to absolute paths on the host; the bridge decodes the base64 to a
+ * `path` the caller supplies (or to `<shotsDir>/<tabId>-<t>.pdf` when no path
+ * is given). The result echoes the saved path + size so callers can hand it
+ * off to a reader tool.
+ */
+async function cmdPdf(params) {
+	const tab = await resolveTab(params.tabId);
+	return withCDP(tab.id, async (send) => {
+		const cdpParams = {
+			printBackground: params.printBackground !== false,
+			landscape: params.landscape === true,
+			...(typeof params.paperWidth === 'number' ? { paperWidth: params.paperWidth } : {}),
+			...(typeof params.paperHeight === 'number' ? { paperHeight: params.paperHeight } : {}),
+			...(typeof params.scale === 'number' ? { scale: params.scale } : {}),
+			...(params.pageRanges ? { pageRanges: String(params.pageRanges) } : {}),
+		};
+		const res = await send('Page.printToPDF', cdpParams);
+		if (!res || !res.data) throw new Error('Page.printToPDF returned no data');
+		return { tabId: tab.id, base64: res.data };
+	});
+}
+
+/**
+ * Apply `Emulation.setDeviceMetricsOverride` + `setUserAgentOverride` +
+ * `setTouchEmulationEnabled` to switch how the page renders. Presets cover
+ * the common shapes (desktop / iphone / ipad / pixel); a custom object
+ * overrides any field. Restoring back to desktop is `device:"reset"` so
+ * the agent can clean up after itself.
+ */
+async function cmdEmulate(params) {
+	const tab = await resolveTab(params.tabId);
+	const preset = params.device && params.device !== 'reset' ? PRESETS[String(params.device).toLowerCase()] : null;
+	if (params.device && params.device !== 'reset' && !preset && typeof params.device === 'string') {
+		throw new Error(`unknown device preset "${params.device}". Use one of: ${Object.keys(PRESETS).join(', ')}, reset, or pass width/height fields directly.`);
+	}
+	const width = Number(params.width ?? (preset && preset.width) ?? 0);
+	const height = Number(params.height ?? (preset && preset.height) ?? 0);
+	const deviceScaleFactor = Number(params.deviceScaleFactor ?? (preset && preset.deviceScaleFactor) ?? 1);
+	const isMobile = params.isMobile ?? (preset && preset.isMobile) ?? false;
+	const hasTouch = params.hasTouch ?? (preset && preset.hasTouch) ?? false;
+	const userAgent = params.userAgent || (preset && preset.userAgent) || undefined;
+	return withCDP(tab.id, async (send) => {
+		if (params.device === 'reset') {
+			await send('Emulation.clearDeviceMetricsOverride').catch(() => {});
+			await send('Emulation.setUserAgentOverride', { userAgent: '' }).catch(() => {});
+			await send('Emulation.setTouchEmulationEnabled', { enabled: false }).catch(() => {});
+			return { tabId: tab.id, reset: true };
+		}
+		if (width > 0 && height > 0) {
+			await send('Emulation.setDeviceMetricsOverride', {
+				width, height, deviceScaleFactor, mobile: isMobile,
+			}).catch((e) => { throw new Error(`setDeviceMetricsOverride failed: ${e.message}`); });
+		}
+		if (userAgent) {
+			await send('Emulation.setUserAgentOverride', { userAgent }).catch(() => {});
+		}
+		await send('Emulation.setTouchEmulationEnabled', { enabled: hasTouch }).catch(() => {});
+		return {
+			tabId: tab.id,
+			width, height, deviceScaleFactor, isMobile, hasTouch,
+			userAgent: userAgent || null,
+		};
+	});
+}
+
+const PRESETS = {
+	desktop: { width: 1280, height: 800, deviceScaleFactor: 1, isMobile: false, hasTouch: false, userAgent: '' },
+	'mobile-iphone-13': { width: 390, height: 844, deviceScaleFactor: 3, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1' },
+	'mobile-pixel-7': { width: 412, height: 915, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36' },
+	'tablet-ipad': { width: 768, height: 1024, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1' },
+};
 
 async function cmdBrowserInfo() {
 	return { client: 'dsh-browser-extension', version: EXT_VERSION, browser: helloInfo };
@@ -895,6 +1153,8 @@ const COMMANDS = {
 	click: cmdClick, input: cmdInput, press: cmdPress, scroll: cmdScroll,
 	snapshot: cmdSnapshot, screenshot: cmdScreenshot,
 	wait: cmdWait, dialog: cmdDialogPolicy,
+	'console.log': cmdConsoleLog, 'network.log': cmdNetworkLog, 'network.clear': cmdNetworkClear,
+	pdf: cmdPdf, emulate: cmdEmulate,
 };
 
 /**

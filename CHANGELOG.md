@@ -1,5 +1,11 @@
 # 更新日志
 
+## v1.0.6 (2026-09-03)
+
+- 变更：`Config.enabled` schema 默认值从 `false` 改为 `true`，装上即默认启动桥接（issue #1 反馈：之前需要手动在 setting 文件加 `enabled: true` 才能用）
+- 安全：`allowEval` 默认仍为 `false`，启用 eval 仍需显式配置
+- 配套：CHANGELOG/README 同步更新启用行为说明
+
 ## v1.0.5 (2026-09-03)
 
 - 修复：在新版 `@deepseek-ai/dsh-settings`（0.1.2-alpha.* 起）下插件加载失败（issue #1）

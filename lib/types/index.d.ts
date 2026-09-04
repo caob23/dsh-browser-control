@@ -25,8 +25,9 @@ export declare const inject: string[];
 export declare const BROWSER_BRIDGE_SETTINGS_NAMESPACE = "browser-bridge";
 export interface Config {
     /**
-     * Whether the local bridge listens. False keeps the tools mounted but every
-     * call reports how to enable the bridge, so the opt-in stays explicit.
+     * Whether the local bridge listens. Defaults to true so the plugin is
+     * usable immediately after install; set false to keep the tools mounted but
+     * every call reports how to enable the bridge, so the opt-out stays explicit.
      */
     enabled?: boolean;
     /** Loopback port the extension dials; the HTTP face shares it. */
